@@ -16,10 +16,12 @@ from pathlib import Path
 from .artifact import ArtifactStore
 from .loop import evolve_artifact
 
-# Judge + optimizer client: hook point for provider wiring. Offline default so
-# the CLI runs without a key until a client is configured. Tests inject a
-# scripted client instead.
-CLIENT = None
+# Judge + optimizer client: the agent itself (Claude Code, with its rules,
+# patterns, and skills). Default unless claude is off PATH — then offline mode.
+from .client import ClaudeClient  # noqa: E402
+import shutil  # noqa: E402
+
+CLIENT = ClaudeClient() if shutil.which("claude") else None
 
 
 def _load_eval_set(path: str) -> dict:
