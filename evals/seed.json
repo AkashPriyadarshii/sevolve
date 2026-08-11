@@ -1,0 +1,25 @@
+{
+  "name": "sevolve-seed",
+  "description": "Seed eval set: concise-summary skill. Enough real task-shaped examples to cold-start the loop and prove a known-good artifact beats a known-bad one.",
+  "artifact": { "kind": "skill", "id": "concise-summary" },
+  "tasks": [
+    {
+      "id": "sum-1",
+      "task": "Summarize the following text in at most 40 words, keeping the main point and the exact date:\n\"The RBI announced on 2026-07-15 that repo rates would be cut by 25 basis points effective immediately, citing cooling inflation and a need to support credit growth. Analysts called the move a surprise and flagged possible effects on deposit rates.\"",
+      "graders": [
+        { "name": "contains_date", "type": "contains", "value": "2026-07-15" },
+        { "name": "max_40_words", "type": "length", "lo": 1, "hi": 280 },
+        { "name": "no_drop_main_point", "type": "contains", "value": "repo" }
+      ]
+    },
+    {
+      "id": "sum-2",
+      "task": "Summarize the following text in at most 40 words, keeping the main point and the exact number:\n\"The 2026 State of the Cloud report found that 64% of enterprises now run more than half their workloads in public cloud, up from 51% the previous year, with cost optimization overtaking migration as the top initiative.\"",
+      "graders": [
+        { "name": "contains_64", "type": "contains", "value": "64" },
+        { "name": "max_40_words", "type": "length", "lo": 1, "hi": 280 },
+        { "name": "no_drop_cloud", "type": "contains", "value": "cloud" }
+      ]
+    }
+  ]
+}
