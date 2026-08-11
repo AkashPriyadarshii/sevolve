@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sevolve — the agent that improves the machine around the model</title>
+<meta name="description" content="sevolve is a FOSS self-evolving harness for LLM agents. It captures real execution traces, grades them blindly, and evolves skills, prompts, and rules — versioned, gated, MIT, no GPU.">
+<style>
+:root{
+  --bg:#f5f1ea; --ink:#1a1a1a; --muted:#6b6b6b; --accent:#c6392b; --accent2:#1f6f43;
+  --line:#d9d2c6; --card:#fffdf8; --mono:"SF Mono",Consolas,monospace;
+  --serif:Georgia,"Times New Roman",serif; --sans:-apple-system,Segoe UI,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.6 var(--sans);padding:0 24px}
+.wrap{max-width:1080px;margin:0 auto}
+nav{display:flex;justify-content:space-between;align-items:center;padding:22px 0;border-bottom:1px solid var(--line)}
+nav .logo{font:700 20px var(--mono);letter-spacing:-.5px}
+nav .logo span{color:var(--accent)}
+nav a{color:var(--ink);text-decoration:none;font-size:14px;margin-left:22px}
+nav a:hover{text-decoration:underline}
+.hero{padding:80px 0 48px;max-width:760px}
+.eyebrow{font:600 12px var(--mono);color:var(--accent);text-transform:uppercase;letter-spacing:.12em}
+h1{font:800 clamp(38px,6vw,64px)/1.05 var(--serif);letter-spacing:-1px;margin:16px 0 20px}
+.hero p{font-size:20px;color:var(--muted);max-width:620px}
+.cta{margin-top:32px;display:flex;gap:14px;flex-wrap:wrap}
+.btn{display:inline-block;padding:14px 26px;border-radius:8px;font-weight:600;text-decoration:none;font-size:15px}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#a92c1f}
+.btn-ghost{border:1px solid var(--ink);color:var(--ink)}
+.btn-ghost:hover{background:#000;color:#fff}
+.chip{display:inline-block;margin:0 8px 8px 0;padding:6px 12px;border:1px solid var(--line);border-radius:100px;font:500 12px var(--mono);color:var(--muted)}
+section{padding:56px 0;border-top:1px solid var(--line)}
+h2{font:700 28px var(--serif);margin-bottom:8px}
+.lede{color:var(--muted);max-width:640px;margin-bottom:28px}
+.loop{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:32px;font-family:var(--mono);font-size:14px;line-height:2;overflow-x:auto}
+.loop b{color:var(--accent2)}
+.arrow{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-top:8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px}
+.card h3{font:700 16px var(--mono);margin-bottom:8px}
+.card p{font-size:15px;color:var(--muted)}
+.code{background:#141414;color:#e8e8e8;border-radius:10px;padding:22px;font:13px/1.7 var(--mono);overflow-x:auto}
+.code .c{color:#7d7d7d}
+.code .g{color:#7ee0a0}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
+.rule{background:var(--card);border-left:4px solid var(--accent);padding:18px 22px;border-radius:0 10px 10px 0}
+.rule h3{font:700 15px var(--mono);margin-bottom:6px}
+.rule p{font-size:15px;color:var(--muted)}
+footer{padding:40px 0 60px;border-top:1px solid var(--line);color:var(--muted);font-size:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+footer .mono{font-family:var(--mono)}
+@media(max-width:640px){.hero{padding:48px 0 32px}.hero p{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <div class="logo">se<span>volve</span>_</div>
+  <div>
+    <a href="#loop">the loop</a>
+    <a href="#why">why</a>
+    <a href="#install">install</a>
+    <a href="#safety">safety</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="eyebrow">FOSS · self-evolving harness for LLM agents</div>
+  <h1>Don't fine-tune the model. Evolve the machine around it.</h1>
+  <p>sevolve captures real execution traces, grades them blindly, and evolves your skills, prompts, and rules — versioned, gated, and provably better. No GPU. No weight training. MIT.</p>
+  <div class="cta">
+    <a class="btn btn-primary" href="#install">Get started</a>
+    <a class="btn btn-ghost" href="https://github.com/AkashPriyadarshii/claude-self-evolution-engine" target="_blank" rel="noopener">View on GitHub</a>
+  </div>
+  <div style="margin-top:28px">
+    <span class="chip">no GPU</span><span class="chip">stdlib-only</span><span class="chip">API-key only</span><span class="chip">MIT license</span><span class="chip">hermetic tests</span>
+  </div>
+</header>
+
+<section id="loop">
+  <h2>The evolution loop</h2>
+  <p class="lede">Your agent is the subject and the executor. sevolve orchestrates the loop outside it — so every change is observable, revertible, and gated.</p>
+  <div class="loop">
+    <b>sample task</b> <span class="arrow">→</span> run with current artifact <span class="arrow">→</span> <b>capture trace</b> <span class="arrow">→</span> blind grade<br>
+    <span class="arrow">↖</span>&nbsp;&nbsp;promote on held-out &nbsp;<span class="arrow">←</span>&nbsp;&nbsp;gates pass (size + regression + human)<span class="arrow">&nbsp;←</span>&nbsp;&nbsp;optimizer reflects on the trace<span class="arrow">&nbsp;←</span>&nbsp;&nbsp;score &lt; threshold<br>
+    <span class="arrow">↗</span>&nbsp;&nbsp;version bump &nbsp;<span class="arrow">→</span>&nbsp;&nbsp;PR &nbsp;<span class="arrow">→</span>&nbsp;&nbsp;next run
+  </div>
+</section>
+
+<section id="why">
+  <h2>Why the harness, not the weights</h2>
+  <p class="lede">Self-improvement near-term lives in the machinery around the model: skills, prompts, tool descriptions, workflow code. That's files. Files are versionable, testable, and reviewable.</p>
+  <div class="grid">
+    <div class="card"><h3>trace-driven</h3><p>Learn from what actually happened — task, tool calls, failures, output — not from vibes.</p></div>
+    <div class="card"><h3>blind grader</h3><p>The judge scores output, never the proposed change. No reward hacking.</p></div>
+    <div class="card"><h3>gated promotion</h3><p>Size limits, regression set, tests, human review. <code>--ci</code> skips human, never the gates.</p></div>
+    <div class="card"><h3>versioned artifacts</h3><p>Every skill/prompt is a real file with history. Rollback is a git checkout.</p></div>
+  </div>
+</section>
+
+<section id="install">
+  <h2>Install &amp; run</h2>
+  <p class="lede">One package, one API key, no GPU.</p>
+  <div class="code"><span class="c"># install</span>
+pip install -e .
+export ANTHROPIC_API_KEY=...
+
+<span class="c"># create a skill, then evolve it</span>
+sevolve artifact-add skill --name my-skill --file my-skill.md
+sevolve evolve skill --name my-skill --iterations 5
+<span class="g"># → report/report-*.md: before/after scores, cost-vs-delta, REGRESSION summary</span></div>
+</section>
+
+<section id="safety">
+  <h2>Built to be safe to run</h2>
+  <div class="grid-2">
+    <div class="rule"><h3>The evaluator sits outside the loop</h3><p>Graders run read-only, in a separate process, blind to proposed changes. The thing that scores can't be gamed.</p></div>
+    <div class="rule"><h3>Promote only on real gain</h3><p>Held-out score must rise, or nothing ships. No churn of redundant versions.</p></div>
+    <div class="rule"><h3>Capability guardrail</h3><p>A weak judge model gets logged, not silently trusted. Churn is never silent.</p></div>
+    <div class="rule"><h3>Humans in the loop</h3><p>Promotion is a PR. Default is human review. `--ci` for CI, never past the mechanical gates.</p></div>
+  </div>
+</section>
+
+<footer>
+  <div>sevolve — self-evolving harness for LLM agents. MIT.</div>
+  <div class="mono">harness evolution only · no weight training · no GPU</div>
+</footer>
+</div>
+</body>
+</html>
