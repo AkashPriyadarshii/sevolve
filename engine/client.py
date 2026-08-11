@@ -22,7 +22,7 @@ class ClaudeClient:
         if shutil.which(self.cmd) is None:
             raise ExecutorError(f"CLI '{self.cmd}' not on PATH — cannot judge/optimize.")
         proc = subprocess.run(
-            [self.cmd, "-p", prompt, "--model", "sonnet"],
+            [self.cmd, "-p", prompt, "--model", "sonnet", "--permission-mode", "plan"],
             capture_output=True,
             text=True,
             timeout=600,
