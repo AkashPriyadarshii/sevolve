@@ -36,6 +36,32 @@ def build_prompt(task: str, trace, output: str) -> str:
     )
 
 
+def extract_json(raw: str) -> dict[str, Any] | None:
+    if not raw or not isinstance(raw, str):
+        return None
+    s = raw.strip()
+    if s.startswith("```"):
+        lines = s.splitlines()
+        if len(lines) >= 2 and lines[-1].strip().startswith("```"):
+            s = "\n".join(lines[1:-1]).strip()
+    try:
+        data = json.loads(s)
+        if isinstance(data, dict):
+            return data
+    except (json.JSONDecodeError, TypeError):
+        pass
+    start = raw.find("{")
+    end = raw.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        try:
+            data = json.loads(raw[start : end + 1])
+            if isinstance(data, dict):
+                return data
+        except (json.JSONDecodeError, TypeError):
+            pass
+    return None
+
+
 def run_judge(prompt: str, ctx: dict[str, Any]) -> dict[str, Any]:
     """Call a judge model. `ctx['client']` provides .complete(prompt)->str.
     Override ctx['client'] with a scripted judge in tests.
@@ -44,13 +70,12 @@ def run_judge(prompt: str, ctx: dict[str, Any]) -> dict[str, Any]:
     if client is None:
         raise RuntimeError("judge client not provided (see ctx['client'])")
     raw = client.complete(prompt)
-    try:
-        parsed = json.loads(raw)
-    except (json.JSONDecodeError, TypeError):
+    parsed = extract_json(raw)
+    if parsed is None:
         return {"score": 0.0, "reasoning": f"judge returned non-JSON: {raw[:300]}", "rubric_ok": False}
     return {
         "score": float(parsed.get("score", 0.0)),
-        "reasoning": parsed.get("reasoning", ""),
+        "reasoning": str(parsed.get("reasoning", "")),
         "rubric_ok": bool(parsed.get("rubric_ok", True)),
     }
 

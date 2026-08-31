@@ -7,8 +7,8 @@ from engine.executor import ExecutorError
 
 
 def test_complete_returns_stdout():
-    with patch("engine.client.shutil.which", return_value="/usr/bin/claude"), \
-         patch("engine.client.subprocess.run") as mock_run:
+    with patch("engine.executor.shutil.which", return_value="/usr/bin/claude"), \
+         patch("engine.executor.subprocess.run") as mock_run:
         proc = mock_run.return_value
         proc.returncode = 0
         proc.stdout = '{"score": 0.9, "reasoning": "solid"}'
@@ -18,8 +18,8 @@ def test_complete_returns_stdout():
 
 
 def test_complete_raises_on_nonzero():
-    with patch("engine.client.shutil.which", return_value="/usr/bin/claude"), \
-         patch("engine.client.subprocess.run") as mock_run:
+    with patch("engine.executor.shutil.which", return_value="/usr/bin/claude"), \
+         patch("engine.executor.subprocess.run") as mock_run:
         proc = mock_run.return_value
         proc.returncode = 1
         proc.stderr = "boom"
@@ -31,7 +31,7 @@ def test_complete_raises_on_nonzero():
 
 
 def test_complete_raises_when_cli_missing():
-    with patch("engine.client.shutil.which", return_value=None):
+    with patch("engine.executor.shutil.which", return_value=None):
         try:
             ClaudeClient().complete("x")
             assert False, "expected ExecutorError"

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
+from .judge import extract_json
 from .trace import trace_to_text
 
 # Optimizer fn: (task, trace, output, grades, judge_result, artifact) -> [{"content", "rationale"}]
@@ -57,21 +58,18 @@ def propose(plan_prompt: str, ctx: dict[str, Any]) -> list[dict[str, str]]:
     """Call the optimizer model. ctx['client'] provides .complete(prompt)->str.
     Override in tests with a scripted optimizer.
     """
-    import json
-
     client = ctx.get("client")
     if client is None:
         raise RuntimeError("optimizer client not provided (see ctx['client'])")
     raw = client.complete(plan_prompt)
-    try:
-        parsed = json.loads(raw)
-    except (json.JSONDecodeError, TypeError):
+    parsed = extract_json(raw)
+    if not parsed:
         return []
     variants = parsed.get("variants", [])
     return [
         {"content": str(v.get("content", "")), "rationale": str(v.get("rationale", ""))}
         for v in variants
-        if v.get("content")
+        if isinstance(v, dict) and v.get("content")
     ]
 
 

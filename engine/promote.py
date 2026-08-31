@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 """PR Promote — promote best artifact variant via gh PR.
 
-Usage: python engine/promote.py --artifact skill/concise-summary --report report/report-*.md
+Usage:
+    python -m engine.promote --artifact skill/concise-summary --report report/report-*.md
 """
 
 from __future__ import annotations
 
 import argparse
-import json
-import os
 import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 
 def run_cmd(cmd: list[str], cwd: Path | None = None) -> tuple[int, str, str]:
@@ -21,30 +20,97 @@ def run_cmd(cmd: list[str], cwd: Path | None = None) -> tuple[int, str, str]:
     return proc.returncode, proc.stdout, proc.stderr
 
 
-def parse_report(report_path: Path) -> dict[str, Any] | None:
+def parse_report(report_path: Path | str) -> dict[str, Any] | None:
     """Extract promoted artifact info from report markdown."""
-    content = report_path.read_text(encoding="utf-8")
-    data = {}
-    m = re.search(r"promoted=(true|false)\s+best_score=([\d.]+)", content)
-    if m:
-        data["promoted"] = m.group(1) == "true"
-        data["best_score"] = float(m.group(2))
-    m = re.search(r"Artifact:\s*(\w+)/(\S+)", content)
-    if m:
-        data["kind"] = m.group(1)
-        data["id"] = m.group(2)
-    return data if data else None
+    p = Path(report_path)
+    if not p.exists():
+        return None
+    content = p.read_text(encoding="utf-8")
+    data: dict[str, Any] = {}
+
+    # Match artifact kind/id: e.g. "artifact: `skill/concise-summary`" or "Artifact: skill/concise-summary"
+    m_art = re.search(r"artifact:\s*[`]?([a-zA-Z0-9_-]+)/([a-zA-Z0-9_.-]+)[`]?", content, re.IGNORECASE)
+    if m_art:
+        data["kind"] = m_art.group(1)
+        data["id"] = m_art.group(2)
+
+    # Match promoted status: e.g. "promoted: **True**" or "promoted=true"
+    m_prom = re.search(r"promoted[:=]\s*(?:\*\*)?(true|false)(?:\*\*)?", content, re.IGNORECASE)
+    if m_prom:
+        data["promoted"] = m_prom.group(1).lower() == "true"
+
+    # Match best score: e.g. "**best score: 0.950**" or "best_score=0.95"
+    m_score = re.search(r"(?:best\s+score[:=]|best_score=)\s*(?:\*\*)?([\d.]+)(?:\*\*)?", content, re.IGNORECASE)
+    if m_score:
+        data["best_score"] = float(m_score.group(1))
+
+    return data if ("kind" in data and "promoted" in data) else None
 
 
-def get_artifact_content(kind: str, aid: str, artifacts_dir: Path) -> str | None:
+def get_artifact_content(kind: str, aid: str, artifacts_dir: Path | str) -> str | None:
     """Get latest version content from artifact store."""
-    artifact_dir = artifacts_dir / kind / aid
+    artifact_dir = Path(artifacts_dir) / kind / aid
     if not artifact_dir.exists():
         return None
     versions = sorted(artifact_dir.glob("v*.txt"))
     if not versions:
         return None
     return versions[-1].read_text(encoding="utf-8")
+
+
+def promote_artifact(
+    artifact_spec: str,
+    report_path: Path | str,
+    artifacts_dir: Path | str = "artifacts",
+    base: str = "master",
+    runner: Callable[[list[str]], tuple[int, str, str]] = run_cmd,
+) -> tuple[bool, str]:
+    """Promotes an artifact version via git branch and gh PR."""
+    report_data = parse_report(report_path)
+    if not report_data or not report_data.get("promoted"):
+        return False, "report indicates artifact was not promoted"
+
+    kind, aid = artifact_spec.split("/", 1) if "/" in artifact_spec else (report_data["kind"], report_data["id"])
+    content = get_artifact_content(kind, aid, artifacts_dir)
+    if not content:
+        return False, f"artifact content not found: {kind}/{aid}"
+
+    score = report_data.get("best_score", 1.0)
+    branch = f"promote/{kind}/{aid}"
+    rc, _, _ = runner(["git", "checkout", "-b", branch])
+    if rc != 0:
+        runner(["git", "checkout", branch])
+        runner(["git", "reset", "--hard", base])
+
+    artifact_file = Path(artifacts_dir) / kind / aid
+    latest_files = sorted(artifact_file.glob("v*.txt"))
+    if not latest_files:
+        return False, "no version file to commit"
+
+    rc, _, err = runner(["git", "add", str(latest_files[-1])])
+    if rc != 0:
+        return False, f"git add failed: {err}"
+
+    msg = f"promote: {kind}/{aid} held-out score {score:.2f}\n\nReport: {report_path}"
+    rc, _, err = runner(["git", "commit", "-m", msg])
+    if rc != 0 and "nothing to commit" not in err.lower() and "clean" not in err.lower():
+        return False, f"git commit failed: {err}"
+
+    rc, _, err = runner(["git", "push", "-u", "origin", branch])
+    if rc != 0:
+        return False, f"git push failed: {err}"
+
+    rc, out, err = runner([
+        "gh", "pr", "create",
+        "--base", base,
+        "--head", branch,
+        "--title", f"promote: {kind}/{aid} ({score:.2f})",
+        "--body", f"Promoted via sevolve evolution loop.\n\nReport: {report_path}\n\nHeld-out score: {score:.2f}",
+    ])
+    if rc != 0:
+        return False, f"gh pr create failed: {err}"
+
+    return True, out.strip()
 
 
 def main() -> int:
@@ -55,61 +121,18 @@ def main() -> int:
     ap.add_argument("--base", default="master", help="base branch")
     args = ap.parse_args()
 
-    report_path = Path(args.report)
-    if not report_path.exists():
-        print(f"report not found: {report_path}", file=sys.stderr)
-        return 1
-
-    report_data = parse_report(report_path)
-    if not report_data or not report_data.get("promoted"):
-        print("report indicates no promotion (not promoted or no best_score)")
+    ok, msg = promote_artifact(
+        args.artifact,
+        args.report,
+        artifacts_dir=args.artifacts_dir,
+        base=args.base,
+    )
+    if ok:
+        print(f"PR created: {msg}")
         return 0
-
-    kind, aid = args.artifact.split("/", 1)
-    content = get_artifact_content(kind, aid, Path(args.artifacts_dir))
-    if not content:
-        print(f"artifact content not found: {kind}/{aid}", file=sys.stderr)
+    else:
+        print(f"Promotion failed: {msg}", file=sys.stderr)
         return 1
-
-    branch = f"promote/{kind}/{aid}"
-    rc, out, err = run_cmd(["git", "checkout", "-b", branch])
-    if rc != 0:
-        run_cmd(["git", "checkout", branch])
-        run_cmd(["git", "reset", "--hard", args.base])
-
-    artifact_dir = Path(args.artifacts_dir) / kind / aid
-    latest = sorted(artifact_dir.glob("v*.txt"))[-1]
-    latest.write_text(content, encoding="utf-8")
-
-    rc, out, err = run_cmd(["git", "add", str(latest)])
-    if rc != 0:
-        print(f"git add failed: {err}", file=sys.stderr)
-        return 1
-
-    msg = f"promote: {kind}/{aid} held-out score {report_data['best_score']:.2f}\n\nReport: {report_path}"
-    rc, out, err = run_cmd(["git", "commit", "-m", msg])
-    if rc != 0:
-        print(f"git commit failed: {err}", file=sys.stderr)
-        return 1
-
-    rc, out, err = run_cmd(["git", "push", "-u", "origin", branch])
-    if rc != 0:
-        print(f"git push failed: {err}", file=sys.stderr)
-        return 1
-
-    rc, out, err = run_cmd([
-        "gh", "pr", "create",
-        "--base", args.base,
-        "--head", branch,
-        "--title", f"promote: {kind}/{aid} ({report_data['best_score']:.2f})",
-        "--body", f"Promoted via sevolve evolution loop.\n\nReport: {report_path}\n\nHeld-out score: {report_data['best_score']:.2f}"
-    ])
-    if rc != 0:
-        print(f"gh pr create failed: {err}", file=sys.stderr)
-        return 1
-
-    print(f"PR created: {out.strip()}")
-    return 0
 
 
 if __name__ == "__main__":

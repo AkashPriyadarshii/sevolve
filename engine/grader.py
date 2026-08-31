@@ -13,12 +13,10 @@ from typing import Any, Callable
 
 from .trace import Trace
 
+import re
+
 # Grader fn: (task: str, trace: Trace, output: str) -> float in [0, 1]
 Grader = Callable[[str, Trace, str], float]
-
-
-def lenient_threshold(score: float) -> bool:
-    return score >= 0.85
 
 
 def passes(score: float, threshold: float = 0.85) -> bool:
@@ -33,6 +31,10 @@ def contains(task: str, trace: Trace, output: str, needle: str) -> float:
     return 1.0 if needle in output.strip() else 0.0
 
 
+def regex_match(task: str, trace: Trace, output: str, pattern: str) -> float:
+    return 1.0 if re.search(pattern, output.strip()) else 0.0
+
+
 def length_within(task: str, trace: Trace, output: str, lo: int = 0, hi: int = 1_000_000) -> float:
     n = len(output.strip())
     return 1.0 if lo <= n <= hi else 0.0
@@ -45,6 +47,10 @@ def make_exact(expected: str) -> Grader:
 
 def make_contains(needle: str) -> Grader:
     return lambda task, trace, output: contains(task, trace, output, needle)
+
+
+def make_regex(pattern: str) -> Grader:
+    return lambda task, trace, output: regex_match(task, trace, output, pattern)
 
 
 def make_length(lo: int, hi: int) -> Grader:

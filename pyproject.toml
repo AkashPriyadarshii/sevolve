@@ -4,21 +4,47 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sevolve"
-version = "0.1.0"
-description = "Self-evolving harness for LLM agents. Evolve skills, prompts, and rules from real execution traces. No GPU, no weight training."
+version = "0.1.1"
+description = "Zero-GPU self-evolving harness for LLM agents. Evolve skills, prompts, and rules from real execution traces."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "AkashPriyadarshii" }]
-keywords = ["llm", "agents", "self-improvement", "evolution", "claude", "prompts", "skills"]
+authors = [{ name = "Akash Priyadarshi", email = "akashpriyadarshi.dev@gmail.com" }]
+keywords = [
+    "llm",
+    "agents",
+    "self-improving",
+    "prompt-engineering",
+    "prompt-optimization",
+    "skill-discovery",
+    "claude-code",
+    "openclaw",
+    "cursorrules",
+    "agentic-ai",
+    "gepa",
+    "hermetic-evals",
+]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Software Development :: Testing",
 ]
 dependencies = []
+
+[project.urls]
+Homepage = "https://akashpriyadarshii.github.io/sevolve"
+Repository = "https://github.com/AkashPriyadarshii/sevolve"
+Issues = "https://github.com/AkashPriyadarshii/sevolve/issues"
+Author = "https://akashpriyadarshi.vercel.app"
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]

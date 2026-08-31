@@ -37,6 +37,28 @@ def _prompt(artifact: dict, task: str) -> str:
     return head + f"TASK: {task}\n\nReturn only the result."
 
 
+class ClaudeClient:
+    def __init__(self, cmd: str = CLAUDE_CMD, model: str = "sonnet"):
+        self.cmd = cmd
+        self.model = model
+
+    def complete(self, prompt: str) -> str:
+        """One-shot call: run the prompt through the agent, return output."""
+        if shutil.which(self.cmd) is None:
+            raise ExecutorError(f"CLI '{self.cmd}' not on PATH — cannot judge/optimize.")
+        proc = subprocess.run(
+            [self.cmd, "-p", prompt, "--model", self.model, "--permission-mode", "plan"],
+            capture_output=True,
+            text=True,
+            timeout=600,
+            encoding="utf-8",
+            errors="replace",
+        )
+        if proc.returncode != 0:
+            raise ExecutorError(f"judge/optimizer exited {proc.returncode}: {proc.stderr[-2000:]}")
+        return proc.stdout.strip()
+
+
 def run(artifact: dict, task: str, trace: Trace | None = None, timeout: int = 300) -> str:
     """Run the task with the artifact. Returns output text.
 

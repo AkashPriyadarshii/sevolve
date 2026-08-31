@@ -1,9 +1,9 @@
-# STATE — sevolve
+# STATE - sevolve
 
-Updated 2026-08-12. One source of truth for where the project stands.
+Updated 2026-08-31. One source of truth for where the project stands.
 
 ## Version
-**0.1.0** — finalized. `master` synced with origin, 18 hermetic tests pass, site live on GitHub Pages.
+**0.1.1** - finalized. 32 hermetic tests pass (0.39s), full CLI suite (`evolve`, `artifacts`, `artifact-add`, `ingest`, `promote`, `doctor`, `seed-report`), site live on GitHub Pages.
 
 ## Pipeline status
 | Phase | Status |
@@ -12,16 +12,13 @@ Updated 2026-08-12. One source of truth for where the project stands.
 | P1 artifact/trace/executor | done |
 | P2 graders + judge + seed evals | done |
 | P3 optimizer + gates + loop + report + CLI | done |
-| P4 hermetic tests (15→18 pass) | done |
-| P5 real-session traces (hooks) + PR promote + demo | **pending — next** |
+| P4 hermetic tests (18->32 pass) | done |
+| P5 real-session traces (ingest) + PR promote + doctor | **done** |
 
-## Known limitations
-- Executor hardcoded `claude -p` + sonnet. Configurable command = next.
-- Judge/optimizer client is a hook point, not a wired provider.
-- Seed evals: 2 tasks, concise-summary domain.
-
-## Deploy
-GitHub Pages workflow `.github/workflows/deploy.yml`, Actions source. Root causes fixed this session: Pages not enabled (now enabled, build_type=workflow), `site/index.html` was gitignored (un-ignored, committed).
-
-## Uncommitted
-`traces/20260811T192837.jsonl` — session trace data (captured, not yet pushed).
+## Capabilities
+- Ingestion: parses Claude Code session JSONL and generic traces into `Trace` models.
+- Evolution: GEPA reflect-and-propose on execution traces.
+- Gates: mechanical byte size limit, regression hold check, and human approval / `--ci`.
+- Promotion: automated Git branch + GitHub PR creation via `gh`.
+- Graders: exact match, substring contains, length within bounds, regex match.
+- Robustness: code-fence tolerant JSON decoding (` ```json `), zero read side-effects.

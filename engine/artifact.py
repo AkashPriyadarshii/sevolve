@@ -27,46 +27,56 @@ class ArtifactStore:
     def _dir(self, kind: str, aid: str) -> Path:
         if kind not in KINDS:
             raise ValueError(f"unknown kind {kind!r}; use one of {sorted(KINDS)}")
-        d = self.root / kind / aid
+        return self.root / kind / aid
+
+    def _ensure_dir(self, kind: str, aid: str) -> Path:
+        d = self._dir(kind, aid)
         d.mkdir(parents=True, exist_ok=True)
         return d
 
     def _meta_path(self, kind: str, aid: str) -> Path:
         return self._dir(kind, aid) / "meta.jsonl"
 
-    def create(self, kind: str, aid: str, content: str) -> dict[str, Any]:
+    def add_version(
+        self,
+        kind: str,
+        aid: str,
+        content: str,
+        parent: int | None = None,
+        status: str = DRAFT,
+        score: float | None = None,
+        grades: dict[str, Any] | None = None,
+        trace_ids: list[str] | None = None,
+    ) -> dict[str, Any]:
+        meta = self.meta(kind, aid)
+        if not meta:
+            version = 1
+            rec_parent = parent
+        else:
+            latest = meta[-1]
+            version = latest["version"] + 1
+            rec_parent = parent if parent is not None else latest["version"]
+
         rec = {
-            "version": 1,
-            "parent": None,
+            "version": version,
+            "parent": rec_parent,
             "created_at": _now(),
-            "status": DRAFT,
-            "score": None,
-            "grades": {},
-            "trace_ids": [],
+            "status": status,
+            "score": score,
+            "grades": grades if grades is not None else {},
+            "trace_ids": trace_ids if trace_ids is not None else [],
         }
-        self._dir(kind, aid).joinpath("v1.txt").write_text(content, encoding="utf-8")
+        d = self._ensure_dir(kind, aid)
+        d.joinpath(f"v{version}.txt").write_text(content, encoding="utf-8")
         with self._meta_path(kind, aid).open("a", encoding="utf-8") as f:
             f.write(json.dumps(rec) + "\n")
         return rec
 
-    def add_version(self, kind: str, aid: str, content: str, parent: int | None = None) -> dict[str, Any]:
+    def create(self, kind: str, aid: str, content: str) -> dict[str, Any]:
         meta = self.meta(kind, aid)
-        if not meta:
-            raise ValueError(f"artifact {kind}/{aid} does not exist")
-        latest = meta[-1]
-        rec = {
-            "version": latest["version"] + 1,
-            "parent": parent if parent is not None else latest["version"],
-            "created_at": _now(),
-            "status": DRAFT,
-            "score": None,
-            "grades": {},
-            "trace_ids": [],
-        }
-        self._dir(kind, aid).joinpath(f"v{rec['version']}.txt").write_text(content, encoding="utf-8")
-        with self._meta_path(kind, aid).open("a", encoding="utf-8") as f:
-            f.write(json.dumps(rec) + "\n")
-        return rec
+        if meta:
+            raise ValueError(f"artifact {kind}/{aid} already exists")
+        return self.add_version(kind, aid, content)
 
     def meta(self, kind: str, aid: str) -> list[dict[str, Any]]:
         p = self._meta_path(kind, aid)
@@ -80,14 +90,20 @@ class ArtifactStore:
         if not meta:
             return None
         latest = meta[-1]
-        content = self._dir(kind, aid).joinpath(f"v{latest['version']}.txt").read_text(encoding="utf-8")
+        p = self._dir(kind, aid) / f"v{latest['version']}.txt"
+        if not p.exists():
+            return None
+        content = p.read_text(encoding="utf-8")
         return {**latest, "content": content, "kind": kind, "id": aid}
 
     def get_version(self, kind: str, aid: str, version: int) -> dict[str, Any] | None:
         meta = [m for m in self.meta(kind, aid) if m["version"] == version]
         if not meta:
             return None
-        content = self._dir(kind, aid).joinpath(f"v{version}.txt").read_text(encoding="utf-8")
+        p = self._dir(kind, aid) / f"v{version}.txt"
+        if not p.exists():
+            return None
+        content = p.read_text(encoding="utf-8")
         return {**meta[0], "content": content, "kind": kind, "id": aid}
 
     def set_score(self, kind: str, aid: str, version: int, score: float, grades: dict[str, Any], trace_ids: list[str]) -> None:

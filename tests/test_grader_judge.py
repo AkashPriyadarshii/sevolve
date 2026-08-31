@@ -38,6 +38,25 @@ def test_judge_parses_json():
     assert result["reasoning"] == "solid"
 
 
+def test_judge_parses_markdown_json():
+    class Fake:
+        def complete(self, prompt):
+            return "```json\n" + json.dumps({"score": 0.88, "reasoning": "markdown formatted", "rubric_ok": True}) + "\n```"
+
+    prompt = build_prompt("task", Trace(task="task"), "out")
+    result = run_judge(prompt, {"client": Fake()})
+    assert judge_score(result) == 0.88
+    assert result["reasoning"] == "markdown formatted"
+    assert result["rubric_ok"] is True
+
+
+def test_regex_grader():
+    from engine.grader import make_regex
+    g = make_regex(r"\b202[0-9]-[0-1][0-9]-[0-3][0-9]\b")
+    assert g("t", Trace(task="t"), "Date is 2026-07-15") == 1.0
+    assert g("t", Trace(task="t"), "No date") == 0.0
+
+
 def test_judge_handles_non_json():
     class Fake:
         def complete(self, prompt):

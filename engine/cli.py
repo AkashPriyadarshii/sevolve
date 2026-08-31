@@ -3,6 +3,10 @@
 Usage:
     sevolve evolve skill --name my-skill [--iterations 3] [--ci]
     sevolve artifacts                          # list versioned artifacts
+    sevolve artifact-add skill --name s --file s.md
+    sevolve ingest --file transcript.jsonl     # ingest execution trace
+    sevolve promote --artifact skill/s --report report.md
+    sevolve doctor                             # inspect system & tools
     sevolve seed-report                        # expand seed eval set
 """
 
@@ -10,22 +14,22 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import sys
 from pathlib import Path
 
 from .artifact import ArtifactStore
+from .executor import ClaudeClient
 from .loop import evolve_artifact
 
-# Judge + optimizer client: the agent itself (Claude Code, with its rules,
-# patterns, and skills). Default unless claude is off PATH — then offline mode.
-from .client import ClaudeClient  # noqa: E402
-import shutil  # noqa: E402
 
-CLIENT = ClaudeClient() if shutil.which("claude") else None
+def get_client() -> ClaudeClient | None:
+    return ClaudeClient() if shutil.which("claude") else None
 
 
 def _load_eval_set(path: str) -> dict:
     from evals.generator import expand_seed
+
     p = Path(path)
     if not p.exists():
         default = Path(__file__).resolve().parent.parent / "evals" / "seed.json"
@@ -41,23 +45,31 @@ def cmd_evolve(args) -> int:
     store = ArtifactStore(args.root)
     artifact = store.get(args.kind, args.name)
     if artifact is None:
-        print(f"artifact {args.kind}/{args.name} not found; create it first "
-              "(sevolve artifact-add)", file=sys.stderr)
+        print(f"artifact {args.kind}/{args.name} not found; create it first (sevolve artifact-add)", file=sys.stderr)
         return 1
     eval_set = _load_eval_set(args.evals)
+    client = get_client()
     ctx = {
-        "client": CLIENT,
+        "client": client,
         "ci": args.ci,
         "max_size": args.max_size,
     }
-    if CLIENT is None:
-        print("WARNING: no judge/optimizer client configured — running offline "
-              "(traces + graders only). Set CLIENT or pass a wired client.", file=sys.stderr)
+    if client is None:
+        print(
+            "WARNING: no judge/optimizer client configured — running offline "
+            "(traces + graders only). Set CLIENT or ensure 'claude' is on PATH.",
+            file=sys.stderr,
+        )
     from .report import write
+
     prev = artifact.get("score")
     result = evolve_artifact(
-        store, artifact, eval_set, ctx,
-        iterations=args.iterations, threshold=args.threshold,
+        store,
+        artifact,
+        eval_set,
+        ctx,
+        iterations=args.iterations,
+        threshold=args.threshold,
     )
     path = write(result, prev, Path(args.root).parent / "report")
     print(f"report: {path}")
@@ -67,8 +79,13 @@ def cmd_evolve(args) -> int:
 
 def cmd_artifacts(args) -> int:
     store = ArtifactStore(args.root)
-    for a in store.list():
-        print(f"{a['kind']:9} {a['id']:20} v{a['version']} {a['status']:11} score={a['score']}")
+    items = store.list()
+    if not items:
+        print("No artifacts found.")
+        return 0
+    for a in items:
+        score_str = f"{a['score']:.3f}" if a["score"] is not None else "none"
+        print(f"{a['kind']:9} {a['id']:20} v{a['version']} {a['status']:11} score={score_str}")
     return 0
 
 
@@ -77,9 +94,9 @@ def cmd_artifact_add(args) -> int:
     content = args.content
     if not content and args.file:
         content = Path(args.file).read_text(encoding="utf-8")
-    if not content:
+    if not content and not sys.stdin.isatty():
         content = sys.stdin.read()
-    if not content.strip():
+    if not content or not content.strip():
         print("no content provided (use --content, --file, or stdin)", file=sys.stderr)
         return 1
     store.create(args.kind, args.name, content)
@@ -87,10 +104,63 @@ def cmd_artifact_add(args) -> int:
     return 0
 
 
+def cmd_ingest(args) -> int:
+    from .ingest import ingest_file
+
+    try:
+        tids = ingest_file(args.file, traces_dir=args.traces_dir)
+        print(f"ingested {len(tids)} trace(s) from {args.file}: {', '.join(tids[:5])}{'...' if len(tids) > 5 else ''}")
+        return 0
+    except Exception as e:
+        print(f"ingestion error: {e}", file=sys.stderr)
+        return 1
+
+
+def cmd_promote(args) -> int:
+    from .promote import promote_artifact
+
+    ok, msg = promote_artifact(
+        args.artifact,
+        args.report,
+        artifacts_dir=args.root,
+        base=args.base,
+    )
+    if ok:
+        print(f"PR created: {msg}")
+        return 0
+    else:
+        print(f"Promotion failed: {msg}", file=sys.stderr)
+        return 1
+
+
+def cmd_doctor(args) -> int:
+    store = ArtifactStore(args.root)
+    artifacts = store.list()
+    traces_path = Path("traces")
+    traces_count = len(list(traces_path.glob("*.jsonl"))) if traces_path.exists() else 0
+
+    print("sevolve doctor - system status:")
+    print(f"  claude CLI on PATH : {'yes' if shutil.which('claude') else 'no (offline mode)'}")
+    print(f"  gh CLI on PATH     : {'yes' if shutil.which('gh') else 'no'}")
+    print(f"  git on PATH        : {'yes' if shutil.which('git') else 'no'}")
+    print(f"  artifact store     : {args.root} ({len(artifacts)} artifact(s))")
+    print(f"  traces directory   : traces/ ({traces_count} trace file(s))")
+    return 0
+
+
 def cmd_seed_report(args) -> int:
-    from evals.generator import main as gen_main
-    sys.argv = ["evals.generator", "--out", args.out]
-    gen_main()
+    from evals.generator import expand_seed
+
+    seed_path = Path(args.seed) if args.seed else Path(__file__).resolve().parent.parent / "evals" / "seed.json"
+    data = expand_seed(seed_path)
+    for task in data["tasks"]:
+        task["_graders"] = {k: getattr(v, "__name__", "grader") for k, v in task["_graders"].items()}
+    text = json.dumps(data, indent=2)
+    if args.out:
+        Path(args.out).write_text(text, encoding="utf-8")
+        print(f"wrote seed report to {args.out}")
+    else:
+        sys.stdout.write(text + "\n")
     return 0
 
 
@@ -119,7 +189,22 @@ def main() -> None:
     al = sub.add_parser("artifacts", help="list artifacts")
     al.set_defaults(func=cmd_artifacts)
 
+    ing = sub.add_parser("ingest", help="ingest execution transcript into traces")
+    ing.add_argument("--file", required=True, help="path to Claude transcript or JSONL trace")
+    ing.add_argument("--traces-dir", default="traces", help="target traces directory")
+    ing.set_defaults(func=cmd_ingest)
+
+    prm = sub.add_parser("promote", help="promote artifact via git branch & gh PR")
+    prm.add_argument("--artifact", required=True, help="kind/name e.g. skill/concise-summary")
+    prm.add_argument("--report", required=True, help="path to report markdown")
+    prm.add_argument("--base", default="master", help="base branch")
+    prm.set_defaults(func=cmd_promote)
+
+    doc = sub.add_parser("doctor", help="inspect environment, CLI tools, and traces")
+    doc.set_defaults(func=cmd_doctor)
+
     sr = sub.add_parser("seed-report", help="expand seed eval set to JSON")
+    sr.add_argument("--seed", default="", help="path to seed.json")
     sr.add_argument("--out", default="")
     sr.set_defaults(func=cmd_seed_report)
 

@@ -10,9 +10,10 @@
 - P4.2: GitHub Pages deploy workflow. Fixed Pages enablement + un-ignored `site/index.html` (was breaking the artifact archive step).
 - P4.3: repo skeleton docs — AGENTS.md, STATE.md, session-handoff.md, docs/HANDOFF.md.
 
-## Known limitations
-- Executor hardcoded `claude -p` + sonnet. Configurable command = next.
-- Judge/optimizer client wiring is a hook point, not yet a wired provider.
-- Seed evals: 2 tasks, concise-summary domain.
-- Promotion is a local version bump, not yet a PR (P5).
-- No real-session trace capture yet (P5).
+## 0.1.1 (2026-08-31) - audit & P5 completion
+- Ponytail code audit: eliminated side-effecting `mkdir` on read, consolidated client/executor into stdlib runners, single-pass metadata writes.
+- Robust JSON extraction: handles markdown code fences (` ```json `) and raw outputs seamlessly across judge and optimizer.
+- Trace ingestion: added `engine/ingest.py` to parse live Claude Code transcripts (`USER_INPUT`, `PLANNER_RESPONSE`, `TOOL_RESULT`) and generic JSONL logs into `Trace` objects.
+- PR promotion: hardened `engine/promote.py` report parsing and wired `sevolve promote` subcommand.
+- CLI subcommands: added `sevolve ingest`, `sevolve promote`, and `sevolve doctor`.
+- Test suite expanded: 18 -> 32 hermetic tests (100% passing, 0.39s runtime).

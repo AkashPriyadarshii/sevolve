@@ -7,13 +7,12 @@ variants, gate the best on a held-out task, promote.
 
 from __future__ import annotations
 
-import random
 from typing import Any
 
 from .artifact import ArtifactStore, PROMOTED
 from .executor import ExecutorError, run
 from .grader import evaluate, weighted_score
-from .judge import build_prompt, judge_score, run_judge
+from .judge import build_prompt, run_judge
 from .optimizer import build_plan_prompt, propose
 from .trace import Trace, save
 
@@ -91,9 +90,16 @@ def evolve_artifact(
     promoted = False
     if gated and improved_overall:
         parent = store.meta(kind, aid)[-1]["version"] if store.meta(kind, aid) else None
-        rec = store.add_version(kind, aid, final["content"], parent=parent)
-        store.set_score(kind, aid, rec["version"], final_score, {}, [])
-        store.set_status(kind, aid, rec["version"], PROMOTED)
+        store.add_version(
+            kind,
+            aid,
+            final["content"],
+            parent=parent,
+            status=PROMOTED,
+            score=final_score,
+            grades={},
+            trace_ids=[],
+        )
         promoted = True
 
     return {

@@ -59,3 +59,10 @@ def test_list(store):
     rows = store.list()
     assert len(rows) == 2
     assert {r["id"] for r in rows} == {"s", "p"}
+
+
+def test_get_nonexistent_does_not_create_dir(store):
+    res = store.get("skill", "ghost-artifact")
+    assert res is None
+    ghost_dir = store.root / "skill" / "ghost-artifact"
+    assert not ghost_dir.exists()
