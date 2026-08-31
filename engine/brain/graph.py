@@ -15,18 +15,21 @@ STOPWORDS = {
     "in", "is", "it", "its", "of", "on", "that", "the", "to", "was", "were", "will",
     "with", "my", "your", "ur", "me", "you", "i", "we", "they", "them", "what",
     "who", "where", "when", "why", "how", "tell", "show", "get", "give", "can",
-    "could", "do", "does", "did", "this", "these", "those", "brain"
+    "could", "do", "does", "did", "this", "these", "those", "brain", "make", "made",
+    "build", "built", "create", "created", "start", "started", "know", "think", "find",
+    "search", "look", "about", "file", "files"
 }
 
 
-def _sanitize_fts5_query(query: str) -> str:
+def _sanitize_fts5_query(query: str, mode: str = "AND") -> str:
     raw_terms = re.findall(r'[a-zA-Z0-9_\-]+', query.lower())
     terms = [t for t in raw_terms if t not in STOPWORDS]
     if not terms:
         terms = raw_terms[:3]
     if not terms:
         return '""'
-    return " AND ".join(f'"{t}"' for t in terms[:5])
+    sep = f" {mode} "
+    return sep.join(f'"{t}"' for t in terms[:5])
 
 
 class BrainGraph:
@@ -124,16 +127,14 @@ class BrainGraph:
 
     def query_fts(self, query_str: str, limit: int = 20, node_types: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         conn = self.db.get_connection()
-        sanitized = _sanitize_fts5_query(query_str)
         type_filter = ""
-        params: List[Any] = [sanitized]
+        type_params: List[Any] = []
         
         if node_types:
             placeholders = ",".join("?" for _ in node_types)
             type_filter = f"AND n.node_type IN ({placeholders})"
-            params.extend(node_types)
+            type_params.extend(node_types)
             
-        params.append(limit)
         sql = f"""
             SELECT n.*, fts.rank as fts_rank
             FROM node_fts fts
@@ -142,17 +143,31 @@ class BrainGraph:
             ORDER BY 
                 CASE 
                     WHEN n.node_type = 'identity' THEN 0 
-                    WHEN n.node_type = 'rule' THEN 1 
-                    WHEN n.node_type = 'symbol' THEN 2 
-                    ELSE 3 
+                    WHEN n.node_type = 'repo' THEN 1
+                    WHEN n.node_type = 'rule' THEN 2 
+                    WHEN n.node_type = 'symbol' THEN 3 
+                    ELSE 4 
                 END, 
                 fts.rank ASC
             LIMIT ?
         """
+        
+        # 1. Try high-precision AND matching
+        sanitized_and = _sanitize_fts5_query(query_str, mode="AND")
+        params_and = [sanitized_and] + type_params + [limit]
         try:
-            rows = conn.execute(sql, params).fetchall()
+            rows = conn.execute(sql, params_and).fetchall()
         except Exception:
-            return []
+            rows = []
+            
+        # 2. Fallback to OR matching if AND returned empty
+        if not rows:
+            sanitized_or = _sanitize_fts5_query(query_str, mode="OR")
+            params_or = [sanitized_or] + type_params + [limit]
+            try:
+                rows = conn.execute(sql, params_or).fetchall()
+            except Exception:
+                rows = []
             
         results = []
         for r in rows:
