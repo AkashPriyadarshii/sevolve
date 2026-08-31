@@ -9,4 +9,12 @@ build/
 .env
 *.log
 node_modules/
+# Local Brain & Cognitive Databases (Strictly Isolated)
 .sevolve/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+traces/
+.vault/
