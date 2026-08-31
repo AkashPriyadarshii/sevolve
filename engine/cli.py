@@ -241,6 +241,10 @@ def main() -> None:
     br_prune.add_argument("--db", default=".sevolve/brain.db")
     br_prune.set_defaults(func=lambda a: _call_brain("cmd_brain_prune", a))
 
+    br_mcp = br_sub.add_parser("mcp", help="Run stdio JSON-RPC MCP server for AI coding agents")
+    br_mcp.add_argument("--db", default=".sevolve/brain.db", help="SQLite brain DB path")
+    br_mcp.set_defaults(func=lambda a: _call_brain("cmd_brain_mcp", a))
+
     args = ap.parse_args()
     sys.exit(args.func(args))
 

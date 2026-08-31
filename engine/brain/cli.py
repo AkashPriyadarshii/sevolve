@@ -114,3 +114,11 @@ def cmd_brain_prune(args: argparse.Namespace) -> int:
     res = hebbian.decay_and_prune(half_life_days=half_life, prune_threshold=threshold)
     print(f"Hebbian decay applied: {res['decayed']} edges decayed, {res['pruned']} edges pruned.")
     return 0
+
+
+def cmd_brain_mcp(args: argparse.Namespace) -> int:
+    db_path = getattr(args, "db", ".sevolve/brain.db") or ".sevolve/brain.db"
+    from .mcp import MCPServer
+    server = MCPServer(db_path=db_path)
+    server.run_stdio()
+    return 0
