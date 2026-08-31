@@ -3,10 +3,18 @@
 from __future__ import annotations
 
 import json
+import re
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 from .db import BrainDB
+
+
+def _sanitize_fts5_query(query: str) -> str:
+    terms = re.findall(r'[a-zA-Z0-9_\-]+', query)
+    if not terms:
+        return '""'
+    return " OR ".join(f'"{t}"' for t in terms[:10])
 
 
 class BrainGraph:
@@ -104,8 +112,9 @@ class BrainGraph:
 
     def query_fts(self, query_str: str, limit: int = 20, node_types: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         conn = self.db.get_connection()
+        sanitized = _sanitize_fts5_query(query_str)
         type_filter = ""
-        params: List[Any] = [query_str]
+        params: List[Any] = [sanitized]
         
         if node_types:
             placeholders = ",".join("?" for _ in node_types)
@@ -121,7 +130,11 @@ class BrainGraph:
             ORDER BY fts.rank
             LIMIT ?
         """
-        rows = conn.execute(sql, params).fetchall()
+        try:
+            rows = conn.execute(sql, params).fetchall()
+        except Exception:
+            return []
+            
         results = []
         for r in rows:
             d = dict(r)
