@@ -1,29 +1,26 @@
 # AGENTS.md — sevolve
 
-Rules for any agent working in this repo. Same brain as the user's global contract — shorter, repo-specific.
+Rules for any agent working in this repository.
 
-## Hard rules
-- **Grader + judge run blind and separate** — never see the proposed diff. Reward-hacking defense.
-- **Promote only on real improvement** — held-out score must rise. Never churn redundant versions.
-- **`--ci` overrides human approval, never the mechanical gates.**
-- **Evaluator sits outside the evolution loop.**
-- **All tests hermetic** — no network, no API key. Run `python -m pytest -q` locally, always, before commit.
+## Hard Invariants
+- **Zero Third-Party Dependencies** — Python stdlib only (`sqlite3`, `ast`, `json`, `re`, `argparse`).
+- **SQLite WAL + FTS5 Storage** — All graph nodes, edges, and full-text indexes live in `.sevolve/brain.db`.
+- **Dual-Layer Graph Separation** — Structural AST edges (`CALLS`, `IMPORTS`) are deterministic; Cognitive edges (`CO_MODIFIED_WITH`, `FAILED_ON`, `FIXED_BY`, `APPLIES_TO`) evolve via Hebbian dynamics.
+- **Hebbian Evolution Rules** — Strengthen edges on success ($\alpha=0.15$), attenuate on failure ($\beta=0.20$), decay over time, prune dead links.
+- **Universal Interoperability** — Native stdio JSON-RPC MCP server + CLI + bi-directional Obsidian Markdown vault (`.sevolve/vault/`).
+- **All Tests Hermetic** — Run `python -m pytest -q` locally before every commit. Zero network/API keys needed.
 
-## Touch map
+## Touch Map
 | Area | Rule |
 |------|------|
-| `engine/` | stdlib only. No new deps. Small modules, one job each. |
-| `evals/` | seed tasks + generator. Adding a task is adding a case. |
-| `traces/` | captured JSONL. Data, not code — don't edit by hand. |
-| `artifacts/` | versioned content + meta.jsonl. Git is the store. |
-| `site/` | static HTML, zero build. `site/index.html` must stay committed (Pages deploy archives it). |
-| `docs/` | keep terse. Design changes land here first. |
+| `engine/brain/` | Graph engine: SQLite DB, AST parser, Hebbian dynamics, PageRank, MCP server, Obsidian vault. |
+| `engine/` | Core harness, CLI, trace ingestion, gates, runner. Pure stdlib. |
+| `tests/` | 100% hermetic unit & integration tests. |
+| `site/` | Static HTML marketing site (zero build, deploy archives it). |
+| `docs/` | Architectural specs, PRD, and changelog. Keep terse. |
 
 ## Workflow
-1. Understand first (read the flow, not the file list).
-2. Change engine → hermetic test → local full suite green.
-3. Doc the change (CHANGELOG at minimum).
-4. Commit conventional, push. GitHub via `gh`, never raw curl.
-
-## Current status
-P0-P4 done (v0.1.0, 18 tests green, site deploys). P5 pending: real-session trace hooks + PR promote + demo.
+1. Understand the data flow before touching code.
+2. Changes must preserve <5ms query times and <5MB RAM footprint.
+3. Keep test suite 100% green: `python -m pytest -q`.
+4. Commit conventional, push via `gh` after user confirmation.

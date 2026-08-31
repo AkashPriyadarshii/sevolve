@@ -208,8 +208,47 @@ def main() -> None:
     sr.add_argument("--out", default="")
     sr.set_defaults(func=cmd_seed_report)
 
+    # Brain subcommand group
+    br = sub.add_parser("brain", help="Self-evolving code graph and cognitive brain commands")
+    br_sub = br.add_subparsers(dest="brain_cmd", required=True)
+
+    br_scan = br_sub.add_parser("scan", help="Scan Python AST symbols and dependencies into SQLite")
+    br_scan.add_argument("dir", nargs="?", default=".", help="Directory to scan (default: .)")
+    br_scan.add_argument("--db", default=".sevolve/brain.db", help="SQLite brain DB path")
+    br_scan.set_defaults(func=lambda a: _call_brain("cmd_brain_scan", a))
+
+    br_query = br_sub.add_parser("query", help="Hybrid FTS5 + graph search across symbols, rules, and fixes")
+    br_query.add_argument("query", help="Search query")
+    br_query.add_argument("--limit", type=int, default=10)
+    br_query.add_argument("--db", default=".sevolve/brain.db")
+    br_query.set_defaults(func=lambda a: _call_brain("cmd_brain_query", a))
+
+    br_map = br_sub.add_parser("map", help="Get token-budgeted PageRank code context map")
+    br_map.add_argument("file_path", help="Seed file path")
+    br_map.add_argument("--tokens", type=int, default=1500)
+    br_map.add_argument("--db", default=".sevolve/brain.db")
+    br_map.set_defaults(func=lambda a: _call_brain("cmd_brain_map", a))
+
+    br_sync = br_sub.add_parser("sync", help="Bidirectional sync with Obsidian Markdown vault")
+    br_sync.add_argument("--vault", default=".sevolve/vault", help="Obsidian vault directory")
+    br_sync.add_argument("--direction", choices=["export", "import"], default="export")
+    br_sync.add_argument("--db", default=".sevolve/brain.db")
+    br_sync.set_defaults(func=lambda a: _call_brain("cmd_brain_sync", a))
+
+    br_prune = br_sub.add_parser("prune", help="Apply Hebbian decay and prune dead edges")
+    br_prune.add_argument("--half-life", type=float, default=7.0)
+    br_prune.add_argument("--threshold", type=float, default=0.05)
+    br_prune.add_argument("--db", default=".sevolve/brain.db")
+    br_prune.set_defaults(func=lambda a: _call_brain("cmd_brain_prune", a))
+
     args = ap.parse_args()
     sys.exit(args.func(args))
+
+
+def _call_brain(fn_name: str, args: argparse.Namespace) -> int:
+    from .brain import cli as brain_cli
+    fn = getattr(brain_cli, fn_name)
+    return fn(args)
 
 
 if __name__ == "__main__":

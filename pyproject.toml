@@ -4,25 +4,27 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sevolve"
-version = "0.1.1"
-description = "Zero-GPU self-evolving harness for LLM agents. Evolve skills, prompts, and rules from real execution traces."
+version = "0.2.0"
+description = "Zero-GPU self-evolving code graph and cognitive brain for AI agents. Pure Python stdlib."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Akash Priyadarshi", email = "akashpriyadarshi.dev@gmail.com" }]
 keywords = [
-    "llm",
-    "agents",
-    "self-improving",
-    "prompt-engineering",
-    "prompt-optimization",
-    "skill-discovery",
+    "code-graph",
+    "ast-parser",
+    "knowledge-graph",
+    "agent-memory",
+    "self-evolving",
     "claude-code",
-    "openclaw",
     "cursorrules",
-    "agentic-ai",
-    "gepa",
-    "hermetic-evals",
+    "openclaw",
+    "mcp-server",
+    "hebbian-learning",
+    "pagerank",
+    "obsidian-vault",
+    "prompt-optimization",
+    "zero-gpu",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -44,7 +46,7 @@ dependencies = []
 Homepage = "https://akashpriyadarshii.github.io/sevolve"
 Repository = "https://github.com/AkashPriyadarshii/sevolve"
 Issues = "https://github.com/AkashPriyadarshii/sevolve/issues"
-Author = "https://akashpriyadarshi.vercel.app"
+Author = "https://akashpriyadarshii.github.io/Resume/"
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
@@ -53,7 +55,7 @@ dev = ["pytest>=8"]
 sevolve = "engine.cli:main"
 
 [tool.setuptools]
-packages = ["engine"]
+packages = ["engine", "engine.brain"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

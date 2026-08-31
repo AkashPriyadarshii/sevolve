@@ -1,0 +1,1 @@
+Follow the Ponytail ladder: 1. Does it need to exist? 2. Already in codebase? 3. Stdlib does it? 4. Native platform? 5. Minimum that works.

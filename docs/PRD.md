@@ -1,29 +1,26 @@
 # PRD — sevolve
 
 ## Problem
-Agents plateau: humans manually patch prompts, skills, and rules after every failure. The improvements don't compound, aren't versioned, and aren't verified.
+Coding agents struggle with complex repositories:
+1. **Context Blindness**: Flat file dumps exceed token limits or omit critical caller/callee relationships.
+2. **Amnesia**: Agents repeat the same mistakes across sessions because they don't persist failure causes or co-modification patterns.
+3. **Bloated Tooling**: Existing graph/memory tools require heavy background databases (Neo4j, Docker), high RAM, or closed vector services.
 
 ## Product
-`sevolve` — an engine that captures execution traces, grades them blindly, reflects on why an artifact failed, proposes improved variants, gates them, and promotes the best on held-out data. The machine around the model evolves; the model stays fixed.
+`sevolve` — a zero-dependency, zero-GPU **Self-Evolving Code Graph & Cognitive Brain**.
+It parses the codebase into an AST structural graph (classes, functions, calls, imports), captures execution traces into a cognitive graph (rules, failures, fixes), evolves edge weights via Hebbian dynamics, and serves token-budgeted context to any agent via stdio MCP.
 
 ## Users
-- FOSS developers building agents on Claude Code / any LLM CLI.
-- Anyone who wants their skills/prompts to measurably improve from real use, not vibes.
+- AI coding agents and developers using Claude Code, Cursor, OpenClaw, Codex, Windsurf, or Antigravity.
+- Developers wanting instant (<5ms) repository maps and persistent cross-session memory without running heavy servers.
 
-## Scope (locked)
-In: harness-level evolution — skills, prompts, tool descriptions, rules. Versioned. Trace-driven. Gated. MIT.
-Out: weight training, fine-tuning, RL. No GPU. Never.
+## Scope (Locked)
+- **In**: AST symbol extraction, SQLite WAL + FTS5 graph storage, Hebbian edge weight evolution, token-budgeted PageRank context maps, stdio MCP server, Obsidian Markdown vault sync, 100% hermetic tests.
+- **Out**: External graph databases, GPU weight training, vector database servers, cloud lock-in.
 
-## Success criteria
-1. Bad seed skill scores UP on held-out data after evolution (verified by hermetic test).
-2. Regression set doesn't drop at promotion.
-3. First run costs <$10 and shows a before/after report.
-4. Anyone: `pip install -e .` + API key → `sevolve evolve skill --name my-skill`.
-
-## Anti-goals
-- No auto-approve without gates.
-- No churn of redundant versions.
-- No silently churning on a weak judge — capability warning instead.
-
-## Out of scope (v1)
-- Weight evolution, multi-agent topology evolution, environment generation.
+## Success Criteria
+1. Instant AST code graph indexing (<500ms for 10k LOC).
+2. Sub-5ms query and multi-hop graph traversal.
+3. Hebbian reinforcement updates edge weights from real execution traces.
+4. Universal MCP server connects to Claude Code and Cursor out-of-the-box.
+5. 100% hermetic tests pass locally. Zero third-party dependencies.

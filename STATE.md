@@ -1,24 +1,16 @@
 # STATE - sevolve
 
-Updated 2026-08-31. One source of truth for where the project stands.
+Updated 2026-08-31. Single source of truth for repository state.
 
 ## Version
-**0.1.1** - finalized. 32 hermetic tests pass (0.39s), full CLI suite (`evolve`, `artifacts`, `artifact-add`, `ingest`, `promote`, `doctor`, `seed-report`), site live on GitHub Pages.
+**0.2.0-dev** — Architecture: **Self-Evolving Code Graph & Cognitive Brain**.
+- Sub-5ms queries via SQLite WAL + FTS5 trigram indexing.
+- Zero external dependencies (stdlib-only: `sqlite3`, `ast`, `json`, `re`, `argparse`).
+- Universal stdio JSON-RPC MCP server + CLI + Obsidian Markdown vault (`.sevolve/vault/`).
 
-## Pipeline status
-| Phase | Status |
-|-------|--------|
-| P0 scaffold (git, pyproject, LICENSE, README) | done |
-| P1 artifact/trace/executor | done |
-| P2 graders + judge + seed evals | done |
-| P3 optimizer + gates + loop + report + CLI | done |
-| P4 hermetic tests (18->32 pass) | done |
-| P5 real-session traces (ingest) + PR promote + doctor | **done** |
-
-## Capabilities
-- Ingestion: parses Claude Code session JSONL and generic traces into `Trace` models.
-- Evolution: GEPA reflect-and-propose on execution traces.
-- Gates: mechanical byte size limit, regression hold check, and human approval / `--ci`.
-- Promotion: automated Git branch + GitHub PR creation via `gh`.
-- Graders: exact match, substring contains, length within bounds, regex match.
-- Robustness: code-fence tolerant JSON decoding (` ```json `), zero read side-effects.
+## Architectural Layers
+1. **Structural Code Graph (`Layer 1`)**: Fast AST symbol parser (functions, classes, files, signatures) and dependency DAG (`CALLS`, `IMPORTS`, `INHERITS`).
+2. **Cognitive Brain (`Layer 2`)**: Trace recorder linking sessions and failures to fixes and rules (`CO_MODIFIED_WITH`, `FAILED_ON`, `FIXED_BY`, `APPLIES_TO`).
+3. **Hebbian Evolution**: Reinforcement on success ($\alpha=0.15$), attenuation on failure ($\beta=0.20$), dynamic half-life decay, and pruning.
+4. **Token Compression**: Personalized PageRank (PPR) maps fitting large repositories into token budgets.
+5. **Universal Connectors**: Native MCP tools (`search_brain`, `get_context_map`, `record_trace`, `suggest_fixes`) + CLI workbench (`sevolve brain ...`).

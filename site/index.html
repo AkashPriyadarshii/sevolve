@@ -3,25 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>sevolve - Zero-GPU Self-Evolving Harness for LLM Agents</title>
-<meta name="description" content="sevolve is a zero-dependency, open-source self-evolving harness for LLM coding agents. Captures real execution traces, grades blindly, and evolves skills, prompts, and rules in-situ. Python stdlib-only.">
-<meta name="keywords" content="self-evolving agents, LLM harness, prompt optimization, skill discovery, GEPA, Claude Code, Cursor, OpenClaw, prompt engineering, agentic AI, zero-GPU AI, Akash Priyadarshi">
+<title>sevolve - Zero-GPU Code Graph & Cognitive Brain</title>
+<meta name="description" content="sevolve is a zero-dependency, open-source self-evolving graph harness for LLM coding agents. Features a dual-layer cognitive brain using SQLite WAL, Hebbian learning, and native MCP support.">
+<meta name="keywords" content="self-evolving agents, cognitive graph, code graph, Hebbian learning, MCP server, zero-GPU, Akash Priyadarshi, Obsidian Vault">
 <meta name="author" content="Akash Priyadarshi">
 <link rel="canonical" href="https://akashpriyadarshii.github.io/sevolve/">
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="sevolve - Self-Evolving Harness for LLM Agents">
-<meta property="og:description" content="Don't fine-tune weights. Evolve the machine around the model: skills, prompts, tool definitions, and rules from real execution traces. Zero GPU. Stdlib runtime.">
+<meta property="og:title" content="sevolve - Zero-GPU Code Graph & Cognitive Brain">
+<meta property="og:description" content="Don't dump flat files. Evolve the code graph around the model. Built with Python stdlib and SQLite by Akash Priyadarshi.">
 <meta property="og:url" content="https://akashpriyadarshii.github.io/sevolve/">
 <meta property="og:site_name" content="sevolve">
+<meta property="og:image" content="https://akashpriyadarshii.github.io/sevolve/og-image.png">
 
 <!-- Twitter Cards -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@Akash__ydv001">
 <meta name="twitter:creator" content="@Akash__ydv001">
-<meta name="twitter:title" content="sevolve - Zero-GPU Self-Evolving Agent Harness">
-<meta name="twitter:description" content="Evolve skills, system prompts, tool schemas, and rules from execution traces. Built with Python stdlib by Akash Priyadarshi.">
+<meta name="twitter:title" content="sevolve - Zero-GPU Code Graph & Cognitive Brain">
+<meta name="twitter:description" content="Don't dump flat files. Evolve the code graph around the model. Built with Python stdlib and SQLite by Akash Priyadarshi.">
+<meta name="twitter:image" content="https://akashpriyadarshii.github.io/sevolve/og-image.png">
 
 <!-- Structured Data / JSON-LD -->
 <script type="application/ld+json">
@@ -29,6 +31,7 @@
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "name": "sevolve",
+  "softwareVersion": "v0.2.0",
   "operatingSystem": "Cross-platform",
   "applicationCategory": "DeveloperApplication",
   "offers": {
@@ -41,7 +44,7 @@
     "name": "Akash Priyadarshi",
     "url": "https://akashpriyadarshi.vercel.app"
   },
-  "description": "Zero-GPU self-evolving harness for LLM agents. Evolve skills, prompts, and rules from real execution traces."
+  "description": "Zero-dependency, zero-GPU self-evolving code graph and cognitive brain for AI agents using SQLite WAL and Hebbian dynamics."
 }
 </script>
 
@@ -58,16 +61,14 @@
   --ink-secondary: #a2b4b9;
   --ink-muted: #647a82;
   
-  --accent: #00e599;         /* Phosphor Emerald ~158° */
+  --accent: #00e599;
   --accent-glow: rgba(0, 229, 153, 0.15);
   --accent-dim: #0a3d2c;
   
-  --telemetry: #38bdf8;      /* Cold Cyan ~198° */
+  --telemetry: #38bdf8;
   --telemetry-dim: #0e374d;
   
-  --warn: #fb7185;           /* Rose ~350° */
-  --warn-dim: #3f151d;
-  
+  --warn: #fb7185;
   --yellow: #facc15;
   
   --font-mono: "JetBrains Mono", "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
@@ -84,10 +85,6 @@
   padding: 0;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 body {
   background-color: var(--canvas);
   color: var(--ink);
@@ -95,20 +92,14 @@ body {
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  position: relative;
   overflow-x: hidden;
 }
 
-/* Background Telemetry Grid */
 body::before {
   content: "";
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(var(--border) 1px, transparent 1px);
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
   background-size: 32px 32px;
   opacity: 0.35;
   pointer-events: none;
@@ -121,23 +112,17 @@ a {
   transition: opacity 0.15s ease;
 }
 
-a:hover {
-  opacity: 0.85;
-}
-
-button {
-  font-family: inherit;
-}
+a:hover { opacity: 0.85; }
 
 .wrap {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 0 24px;
   position: relative;
   z-index: 1;
 }
 
-/* Navigation Header */
+/* Header */
 header.top-bar {
   position: sticky;
   top: 0;
@@ -160,9 +145,7 @@ header.top-bar {
   gap: 12px;
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 16px;
   color: var(--ink);
-  letter-spacing: -0.5px;
 }
 
 .brand-icon {
@@ -171,24 +154,20 @@ header.top-bar {
   background: var(--accent);
   border-radius: 2px;
   box-shadow: 0 0 10px var(--accent);
-  animation: pulse-glow 2.5s infinite;
 }
 
-@keyframes pulse-glow {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
-}
-
-.brand span.sub {
-  color: var(--ink-muted);
-  font-weight: 400;
-  font-size: 13px;
+.version-badge {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  color: var(--ink-secondary);
 }
 
 .nav-links {
   display: flex;
-  align-items: center;
-  gap: 24px;
+  gap: 20px;
   font-family: var(--font-mono);
   font-size: 13px;
 }
@@ -196,73 +175,25 @@ header.top-bar {
 .nav-links a {
   color: var(--ink-secondary);
 }
-
 .nav-links a:hover {
   color: var(--ink);
 }
 
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  font-size: 12px;
-  font-family: var(--font-mono);
-  color: var(--accent);
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
-.btn-github {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--surface);
-  color: var(--ink);
-  border: 1px solid var(--border);
-  padding: 6px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  font-family: var(--font-mono);
-  transition: all 0.2s ease;
-}
-
-.btn-github:hover {
-  border-color: var(--border-active);
-  background: var(--surface-hover);
-}
-
-/* Hero Section */
+/* Hero */
 .hero {
-  padding: 64px 0 48px;
-  display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 40px;
-  align-items: start;
-}
-
-.hero-content {
+  padding: 80px 0 60px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
+  max-width: 800px;
 }
 
 .eyebrow-pill {
   align-self: flex-start;
   display: inline-flex;
-  align-items: center;
-  gap: 8px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  padding: 4px 12px;
+  padding: 6px 14px;
   border-radius: 100px;
   font-family: var(--font-mono);
   font-size: 12px;
@@ -271,61 +202,44 @@ header.top-bar {
 }
 
 h1.hero-title {
-  font-size: 42px;
-  line-height: 1.12;
-  font-weight: 750;
-  letter-spacing: -1.2px;
-  color: var(--ink);
+  font-size: 48px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -1.5px;
 }
 
-h1.hero-title span.highlight {
+h1.hero-title span {
   color: var(--accent);
-  text-shadow: 0 0 24px rgba(0, 229, 153, 0.25);
-}
-
-p.hero-desc {
-  font-size: 17px;
-  line-height: 1.6;
-  color: var(--ink-secondary);
 }
 
 .hero-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 6px;
+  gap: 16px;
+  margin-top: 8px;
 }
 
 .btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
   background: var(--accent);
   color: #04100c;
-  font-weight: 600;
-  font-size: 14px;
-  padding: 11px 20px;
+  padding: 12px 24px;
   border-radius: var(--radius-sm);
-  transition: all 0.15s ease;
+  font-weight: 600;
   font-family: var(--font-mono);
+  display: inline-flex;
+  align-items: center;
 }
 
 .btn-primary:hover {
   background: #1affad;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 20px var(--accent-glow);
+  box-shadow: 0 0 20px var(--accent-glow);
 }
 
 .btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
   background: var(--surface);
   color: var(--ink);
   border: 1px solid var(--border);
-  padding: 11px 18px;
+  padding: 12px 24px;
   border-radius: var(--radius-sm);
-  font-size: 14px;
   font-family: var(--font-mono);
 }
 
@@ -336,67 +250,52 @@ p.hero-desc {
 
 .chip-bar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding-top: 12px;
+  gap: 12px;
+  margin-top: 12px;
 }
 
 .spec-chip {
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: var(--radius-sm);
-  color: var(--ink-muted);
-}
-
-.spec-chip b {
   color: var(--ink-secondary);
 }
+.spec-chip span { color: var(--accent); font-weight: 700; }
 
-/* Hero Simulator Panel */
+/* Sections */
+section {
+  padding: 60px 0;
+  border-top: 1px solid var(--border);
+}
+
+.section-head {
+  margin-bottom: 32px;
+}
+.section-tag {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--telemetry);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: block;
+}
+h2.section-title {
+  font-size: 32px;
+  letter-spacing: -1px;
+}
+
+/* Simulator */
 .simulator-pane {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-.pane-header {
-  background: var(--surface-2);
-  border-bottom: 1px solid var(--border);
-  padding: 10px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.pane-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--ink-secondary);
-}
-
-.traffic-dots {
-  display: flex;
-  gap: 6px;
-}
-
-.dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-}
-.dot-red { background: #e06c75; }
-.dot-yellow { background: #e5c07b; }
-.dot-green { background: #98c379; }
-
-/* Interactive Step Rail */
 .step-rail {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -408,222 +307,87 @@ p.hero-desc {
   background: transparent;
   border: none;
   border-right: 1px solid var(--border);
-  padding: 10px 6px;
+  padding: 16px 8px;
   cursor: pointer;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  color: var(--ink-muted);
-  transition: all 0.15s ease;
+  gap: 6px;
+  transition: all 0.2s;
 }
-
-.step-btn:last-child {
-  border-right: none;
-}
-
-.step-btn:hover {
-  background: var(--surface-2);
-  color: var(--ink-secondary);
-}
-
+.step-btn:last-child { border-right: none; }
+.step-btn:hover { background: var(--surface-2); color: var(--ink); }
 .step-btn.active {
   background: var(--surface);
   color: var(--accent);
   border-bottom: 2px solid var(--accent);
 }
-
-.step-num {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.step-label {
-  font-size: 11px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
+.step-num { font-size: 11px; font-weight: bold; }
+.step-label { font-size: 12px; text-align: center; }
 
 .pane-body {
-  padding: 16px;
-  background: #090d0e;
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  min-height: 290px;
-}
-
-.telemetry-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed var(--border);
-  font-size: 11.5px;
-  color: var(--ink-muted);
-}
-
-.telemetry-meta span.active-tag {
-  color: var(--telemetry);
-}
-
-.code-output {
-  color: #c9d1d9;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.code-output .keyword { color: #ff7b72; }
-.code-output .string { color: #a5d6ff; }
-.code-output .number { color: #79c0ff; }
-.code-output .comment { color: #6e7681; }
-.code-output .success { color: var(--accent); }
-.code-output .warn { color: var(--warn); }
-.code-output .cyan { color: var(--telemetry); }
-
-/* Main Feature Sections */
-section {
-  padding: 72px 0;
-  border-top: 1px solid var(--border);
-}
-
-.section-head {
-  margin-bottom: 40px;
-  max-width: 760px;
-}
-
-.section-tag {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 8px;
-  display: block;
-}
-
-h2.section-title {
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: -0.6px;
-  color: var(--ink);
-  margin-bottom: 12px;
-}
-
-p.section-desc {
-  font-size: 16px;
-  color: var(--ink-secondary);
-  line-height: 1.6;
-}
-
-/* Loop Diagram Cards */
-.loop-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 20px;
-}
-
-.loop-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
   padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  transition: border-color 0.2s ease, transform 0.2s ease;
-  position: relative;
-}
-
-.loop-card:hover {
-  border-color: var(--border-active);
-  transform: translateY(-2px);
-}
-
-.loop-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.loop-step-badge {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-  color: var(--telemetry);
-  border: 1px solid var(--border);
-}
-
-.loop-card h3 {
-  font-size: 17px;
-  font-weight: 650;
-  color: var(--ink);
-}
-
-.loop-card p {
-  font-size: 14px;
-  color: var(--ink-secondary);
-  line-height: 1.55;
-}
-
-.loop-card .card-mono-stat {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-muted);
   background: #090d0e;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  margin-top: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  min-height: 250px;
+  color: var(--ink-secondary);
+  white-space: pre-wrap;
 }
 
-/* Comparison / Diff Section */
-.diff-container {
+/* Architecture & Math */
+.arch-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  margin-top: 24px;
 }
 
-.diff-box {
+.arch-card {
   background: var(--surface);
   border: 1px solid var(--border);
+  padding: 24px;
   border-radius: var(--radius-md);
-  overflow: hidden;
 }
 
-.diff-header {
-  padding: 10px 16px;
-  background: var(--surface-2);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.arch-card h3 {
   font-family: var(--font-mono);
-  font-size: 12px;
+  color: var(--telemetry);
+  margin-bottom: 12px;
+  font-size: 16px;
 }
 
-.diff-header.before { color: var(--warn); }
-.diff-header.after { color: var(--accent); }
-
-.diff-content {
-  padding: 16px;
+.math-block {
   background: #090d0e;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.6;
-  min-height: 240px;
+  border: 1px solid var(--border);
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  font-family: "Cambria Math", "Times New Roman", serif;
+  font-size: 18px;
+  color: var(--ink);
+  text-align: center;
+  margin: 16px 0;
+  letter-spacing: 1px;
 }
+.math-block i { color: var(--accent); font-style: italic; }
 
-/* CLI Workbench Section */
+.bench-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.bench-table th, .bench-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.bench-table th { color: var(--ink-muted); }
+.bench-table td.winner { color: var(--accent); font-weight: bold; }
+
+/* Connectors & Workbench */
 .workbench-container {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -635,755 +399,306 @@ p.section-desc {
   display: flex;
   background: var(--surface-2);
   border-bottom: 1px solid var(--border);
-  overflow-x: auto;
 }
 
 .tab-btn {
   background: transparent;
   border: none;
   border-right: 1px solid var(--border);
-  padding: 12px 20px;
+  padding: 14px 24px;
   font-family: var(--font-mono);
   font-size: 13px;
-  color: var(--ink-secondary);
+  color: var(--ink-muted);
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
 }
-
 .tab-btn.active {
   background: var(--surface);
-  color: var(--accent);
-  border-bottom: 2px solid var(--accent);
+  color: var(--telemetry);
+  border-bottom: 2px solid var(--telemetry);
 }
+.tab-btn:hover:not(.active) { color: var(--ink); background: var(--surface-hover); }
 
 .workbench-body {
   padding: 24px;
   background: #070a0b;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #a5d6ff;
+  min-height: 120px;
 }
 
-.cli-code-block {
-  background: #0b0f11;
+/* Obsidian */
+.obsidian-showcase {
+  display: flex;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+.obs-sidebar {
+  width: 250px;
+  border-right: 1px solid var(--border);
+  background: var(--surface-2);
   padding: 16px;
-  position: relative;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.obs-file {
+  padding: 6px;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+.obs-file.active {
+  color: var(--accent);
+  background: var(--surface-hover);
+  border-radius: var(--radius-sm);
+}
+.obs-content {
+  flex: 1;
+  padding: 24px;
+  background: #090d0e;
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.7;
 }
-
-.copy-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  color: var(--ink-secondary);
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  font-size: 11px;
-  font-family: var(--font-mono);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.copy-btn:hover {
-  background: var(--surface-hover);
-  color: var(--ink);
-  border-color: var(--accent);
-}
-
-/* Safety Grid */
-.safety-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
-}
-
-.safety-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  padding: 20px;
-}
-
-.safety-card.strict {
-  border-left-color: var(--telemetry);
-}
-
-.safety-card h3 {
-  font-size: 16px;
-  font-weight: 650;
-  margin-bottom: 8px;
-  font-family: var(--font-mono);
-}
-
-.safety-card p {
-  font-size: 13.5px;
-  color: var(--ink-secondary);
-  line-height: 1.5;
-}
-
-/* Call to Action Banner */
-.cta-banner {
-  background: linear-gradient(180deg, var(--surface) 0%, #0c1214 100%);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 48px 36px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  position: relative;
-  overflow: hidden;
-}
-
-.cta-banner::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 400px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-}
-
-.cta-banner h2 {
-  font-size: 32px;
-  font-weight: 700;
-  letter-spacing: -0.8px;
-}
-
-.cta-banner p {
-  max-width: 600px;
-  font-size: 16px;
-  color: var(--ink-secondary);
-}
+.obs-yaml { color: #8b949e; margin-bottom: 16px; }
+.obs-yaml span { color: #79c0ff; }
+.obs-wikilink { color: var(--telemetry); cursor: pointer; }
+.obs-wikilink:hover { text-decoration: underline; }
 
 /* Footer */
-footer.site-footer {
+footer {
   border-top: 1px solid var(--border);
-  padding: 48px 0 64px;
-  margin-top: 48px;
-}
-
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 24px;
+  padding: 40px 0;
+  margin-top: 40px;
   font-size: 13px;
   color: var(--ink-muted);
-}
-
-.footer-left {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.footer-links {
-  display: flex;
-  gap: 20px;
   font-family: var(--font-mono);
+  display: flex;
+  justify-content: space-between;
 }
-
-.footer-links a {
-  color: var(--ink-secondary);
-}
-
-.footer-links a:hover {
-  color: var(--accent);
-}
-
-/* Responsive adjustments */
-@media (max-width: 960px) {
-  .hero {
-    grid-template-columns: 1fr;
-  }
-  
-  .diff-container {
-    grid-template-columns: 1fr;
-  }
-  
-  h1.hero-title {
-    font-size: 34px;
-  }
-  
-  .step-label {
-    display: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .nav-links {
-    display: none;
-  }
-  
-  .hero {
-    padding: 36px 0;
-  }
-  
-  .cta-banner {
-    padding: 32px 20px;
-  }
-  
-  h2.section-title {
-    font-size: 24px;
-  }
-}
-
-/* Accessibility / Reduced Motion */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
+footer a { color: var(--ink-secondary); }
+footer a:hover { color: var(--accent); }
 </style>
 </head>
 <body>
 
 <header class="top-bar">
-  <div class="wrap">
-    <div class="nav-container">
-      <div class="brand">
-        <div class="brand-icon"></div>
-        <span>sevolve</span>
-        <span class="sub">v0.1.1</span>
-      </div>
-      
-      <nav class="nav-links">
-        <a href="#loop">Evolution Loop</a>
-        <a href="#forensics">Trace Forensics</a>
-        <a href="#cli">CLI Workbench</a>
-        <a href="#safety">Safety Gates</a>
-        <div class="status-badge">
-          <span class="status-dot"></span>
-          <span>HARNESS: ONLINE</span>
-        </div>
-        <a href="https://github.com/AkashPriyadarshii/sevolve" target="_blank" rel="noopener" class="btn-github">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          <span>GitHub</span>
-        </a>
-      </nav>
+  <div class="wrap nav-container">
+    <div class="brand">
+      <div class="brand-icon"></div>
+      sevolve
+      <span class="version-badge">v0.2.0</span>
     </div>
+    <nav class="nav-links">
+      <a href="#simulator">Simulator</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#connectors">Connectors</a>
+      <a href="#obsidian">Vault</a>
+      <a href="https://github.com/AkashPriyadarshii/sevolve" target="_blank">GitHub</a>
+    </nav>
   </div>
 </header>
 
-<main class="wrap">
-  <!-- Hero Section -->
-  <section class="hero" style="border-top: none;">
-    <div class="hero-content">
-      <div class="eyebrow-pill">
-        <span>●</span> FOSS AGENT HARNESS · ZERO GPU
-      </div>
-      
-      <h1 class="hero-title">
-        Don't fine-tune weights.<br>
-        <span class="highlight">Evolve the machine around the model.</span>
-      </h1>
-      
-      <p class="hero-desc">
-        <code>sevolve</code> captures real agent execution traces, grades them blindly in an isolated process, and evolves skills, prompts, and rules. Provably gated, versioned via git, and strictly MIT.
-      </p>
+<main>
+  <!-- HERO -->
+  <section class="wrap">
+    <div class="hero">
+      <div class="eyebrow-pill">ZERO-GPU CODE GRAPH &middot; COGNITIVE AGENT BRAIN</div>
+      <h1 class="hero-title">Don't dump flat files.<br><span>Evolve the code graph</span> around the model.</h1>
       
       <div class="hero-actions">
-        <a href="#cli" class="btn-primary">
-          <span>Run Evolution Loop</span>
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M6 3l5 5-5 5V3z"/></svg>
-        </a>
-        <a href="https://github.com/AkashPriyadarshii/sevolve" target="_blank" rel="noopener" class="btn-secondary">
-          <span>Inspect Source Code</span>
-        </a>
+        <a href="https://github.com/AkashPriyadarshii/sevolve" class="btn-primary">View on GitHub</a>
+        <a href="#connectors" class="btn-secondary">MCP Config</a>
       </div>
       
       <div class="chip-bar">
-        <span class="spec-chip"><b>Runtime:</b> Python stdlib-only</span>
-        <span class="spec-chip"><b>Cost:</b> $0 GPU / API-key only</span>
-        <span class="spec-chip"><b>Grader:</b> Blind LLM Judge</span>
-        <span class="spec-chip"><b>Tests:</b> 100% Hermetic</span>
+        <div class="spec-chip">Latency: <span>&lt;5ms</span></div>
+        <div class="spec-chip">Memory: <span>&lt;5MB</span></div>
+        <div class="spec-chip">Engine: <span>SQLite WAL</span></div>
+        <div class="spec-chip">Runtime: <span>Stdlib Only</span></div>
       </div>
     </div>
+  </section>
+
+  <!-- SIMULATOR -->
+  <section id="simulator" class="wrap">
+    <div class="section-head">
+      <span class="section-tag">Telemetry Rail</span>
+      <h2 class="section-title">Interactive Live Brain & Graph Simulator</h2>
+    </div>
     
-    <!-- Hero Simulator Pane -->
     <div class="simulator-pane">
-      <div class="pane-header">
-        <div class="traffic-dots">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-        </div>
-        <div class="pane-title">
-          <span>telemetry_stream.log</span>
-        </div>
-        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--accent);">
-          LIVE SIMULATOR
-        </div>
-      </div>
-      
-      <div class="step-rail" id="stepRail" role="tablist">
-        <button class="step-btn active" data-step="0" role="tab" aria-selected="true">
-          <span class="step-num">01</span>
-          <span class="step-label">Sample</span>
+      <div class="step-rail">
+        <button class="step-btn active" onclick="setSim(1)">
+          <div class="step-num">PHASE 1</div>
+          <div class="step-label">AST Scan</div>
         </button>
-        <button class="step-btn" data-step="1" role="tab" aria-selected="false">
-          <span class="step-num">02</span>
-          <span class="step-label">Trace</span>
+        <button class="step-btn" onclick="setSim(2)">
+          <div class="step-num">PHASE 2</div>
+          <div class="step-label">Trace Capture</div>
         </button>
-        <button class="step-btn" data-step="2" role="tab" aria-selected="false">
-          <span class="step-num">03</span>
-          <span class="step-label">Judge</span>
+        <button class="step-btn" onclick="setSim(3)">
+          <div class="step-num">PHASE 3</div>
+          <div class="step-label">Hebbian Edge</div>
         </button>
-        <button class="step-btn" data-step="3" role="tab" aria-selected="false">
-          <span class="step-num">04</span>
-          <span class="step-label">Optimize</span>
+        <button class="step-btn" onclick="setSim(4)">
+          <div class="step-num">PHASE 4</div>
+          <div class="step-label">PageRank</div>
         </button>
-        <button class="step-btn" data-step="4" role="tab" aria-selected="false">
-          <span class="step-num">05</span>
-          <span class="step-label">Gates</span>
+        <button class="step-btn" onclick="setSim(5)">
+          <div class="step-num">PHASE 5</div>
+          <div class="step-label">Vault Sync</div>
         </button>
-        <button class="step-btn" data-step="5" role="tab" aria-selected="false">
-          <span class="step-num">06</span>
-          <span class="step-label">Promote</span>
+        <button class="step-btn" onclick="setSim(6)">
+          <div class="step-num">PHASE 6</div>
+          <div class="step-label">MCP Dispatch</div>
         </button>
       </div>
-      
-      <div class="pane-body">
-        <div class="telemetry-meta">
-          <span>PHASE: <strong id="stepPhaseTitle" class="active-tag">01_SAMPLE_TASK</strong></span>
-          <span id="stepTimestamp">STATUS: DISPATCHED</span>
-        </div>
-        <div class="code-output" id="stepOutput"></div>
+      <div class="pane-body" id="sim-body">
+> _sevolve brain scan --path src/
+[INFO] Parsing AST...
+[SUCCESS] Ingested 142 functions, 38 classes
+[SUCCESS] Created 319 structural CALLS edges
+[SUCCESS] Saved to .sevolve/brain.db
       </div>
     </div>
   </section>
 
-  <!-- The Evolution Loop Detail -->
-  <section id="loop">
+  <!-- ARCHITECTURE -->
+  <section id="architecture" class="wrap">
     <div class="section-head">
-      <span class="section-tag">Architecture</span>
-      <h2 class="section-title">The 6-Phase Evolution Loop</h2>
-      <p class="section-desc">
-        Your agent is both the subject and the executor. <code>sevolve</code> orchestrates the improvement loop outside the agent runtime so that every change is measurable, verifiable, and revertible.
-      </p>
+      <span class="section-tag">System Design</span>
+      <h2 class="section-title">Dual-Layer Architecture</h2>
     </div>
     
-    <div class="loop-grid">
-      <div class="loop-card">
-        <div class="loop-card-header">
-          <span class="loop-step-badge">STAGE 01</span>
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted);">evals/</span>
-        </div>
-        <h3>Task Sampling</h3>
-        <p>Samples difficult seed tasks and synthetic edge-cases from the eval corpus without contaminating the held-out verification testbed.</p>
-        <div class="card-mono-stat">INPUT: seed_tasks.jsonl &middot; held_out: 40%</div>
-      </div>
-
-      <div class="loop-card">
-        <div class="loop-card-header">
-          <span class="loop-step-badge">STAGE 02</span>
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--telemetry);">traces/</span>
-        </div>
-        <h3>Trace Capture</h3>
-        <p>Records complete execution trajectories: prompt inputs, agent tool invocations, shell error codes, and final produced artifacts.</p>
-        <div class="card-mono-stat">JSONL &middot; timestamp &middot; token count &middot; cost</div>
-      </div>
-
-      <div class="loop-card">
-        <div class="loop-card-header">
-          <span class="loop-step-badge">STAGE 03</span>
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--warn);">engine/judge.py</span>
-        </div>
-        <h3>Blind Grading</h3>
-        <p>Hard mechanical test checks + isolated LLM-as-judge. Grader never sees proposed diffs, completely eliminating reward-hacking.</p>
-        <div class="card-mono-stat">Read-only process &middot; zero diff leakage</div>
-      </div>
-
-      <div class="loop-card">
-        <div class="loop-card-header">
-          <span class="loop-step-badge">STAGE 04</span>
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent);">engine/optimizer.py</span>
-        </div>
-        <h3>Trace Reflection & Mutation</h3>
-        <p>The optimizer reads the failure trace, diagnoses why the agent missed the mark, and generates candidate skill or prompt mutations.</p>
-        <div class="card-mono-stat">Generates candidate variants A/B/C</div>
-      </div>
-
-      <div class="loop-card">
-        <div class="loop-card-header">
-          <span class="loop-step-badge">STAGE 05</span>
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--telemetry);">engine/gate.py</span>
-        </div>
-        <h3>Mechanical Gate Verification</h3>
-        <p>Runs candidate variants through size limit ceilings, regression checks, and hermetic tests. <code>--ci</code> skips humans, never gates.</p>
-        <div class="card-mono-stat">GATES: Size &middot; Regression &middot; Coverage &ge; 80%</div>
-      </div>
-
-      <div class="loop-card">
-        <div class="loop-card-header">
-          <span class="loop-step-badge">STAGE 06</span>
-          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--accent);">artifacts/</span>
-        </div>
-        <h3>Held-Out Promotion & PR</h3>
-        <p>The top performing candidate on held-out evaluations is version-bumped and committed directly to git via an automated pull request.</p>
-        <div class="card-mono-stat">OUTPUT: PR opened &middot; report-*.md generated</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Trace Forensics & Before/After Diff -->
-  <section id="forensics">
-    <div class="section-head">
-      <span class="section-tag">Telemetry</span>
-      <h2 class="section-title">Trace Forensics & Held-Out Diff</h2>
-      <p class="section-desc">
-        Watch how a real markdown skill evolves from ambiguous prose with high failure rates into a deterministic, high-coverage agent instruction set.
-      </p>
-    </div>
-    
-    <div class="diff-container">
-      <div class="diff-box">
-        <div class="diff-header before">
-          <span>ORIGINAL ARTIFACT: python-audit v1</span>
-          <span>SCORE: 42% (FAIL)</span>
-        </div>
-        <div class="diff-content">
-<span class="comment"># Problem: Agent hallucinated flags and missed sub-process timeouts</span>
-
-<span class="keyword">name:</span> python-audit
-<span class="keyword">description:</span> Audit python code for bugs
-
-<span class="comment"># Fluffy instruction with high failure rate</span>
-Run flake8 and pytest on the user codebase.
-Fix any errors that you find.
-Make sure all functions have docstrings.
-<span class="warn">
-! Execution Failure on Task #104:
-- Agent ran `pytest` without timeout -> hung process.
-- Agent swallowed stderr in subprocess.
-- Held-out evaluation score: 42/100</span>
-        </div>
+    <div class="arch-grid">
+      <div class="arch-card">
+        <h3>Layer 1: Structural AST</h3>
+        <p>Deterministic ingestion of syntax trees. Tracks exact function signatures, class boundaries, <code>CALLS</code>, and <code>IMPORTS</code> edges. Zero hallucination guarantee.</p>
+        
+        <table class="bench-table">
+          <tr><th>System</th><th>Storage</th><th>Latency</th></tr>
+          <tr><td>Neo4j</td><td>~500MB</td><td>~45ms</td></tr>
+          <tr><td>Vector DB</td><td>~2GB (GPU)</td><td>~120ms</td></tr>
+          <tr><td class="winner">sevolve (SQLite)</td><td class="winner">&lt;5MB</td><td class="winner">&lt;5ms</td></tr>
+        </table>
       </div>
       
-      <div class="diff-box">
-        <div class="diff-header after">
-          <span>EVOLVED ARTIFACT: python-audit v2</span>
-          <span>SCORE: 96% (PROMOTED)</span>
-        </div>
-        <div class="diff-content">
-<span class="comment"># Evolved by sevolve after reflecting on trace #104</span>
-
-<span class="keyword">name:</span> python-audit
-<span class="keyword">description:</span> Deterministic AST and hermetic test audit
-
-<span class="success">1. AST Check:</span> Parse syntax with stdlib ast.parse() first.
-<span class="success">2. Bounded Execution:</span> Run `pytest -q` with strict 30s timeout.
-<span class="success">3. Output Capture:</span> Explicitly pipe stdout & stderr to log.
-<span class="success">4. Hermetic Isolation:</span> Never make network calls during test pass.
-
-<span class="cyan">✓ Held-Out Evaluation Verification:
-- Pass Rate: 96% (+54% delta)
-- Zero regression on existing 18 test cases
-- Gated and promoted to artifacts/skills/python-audit-v2.md</span>
+      <div class="arch-card">
+        <h3>Layer 2: Cognitive Brain</h3>
+        <p>Evolving graph via Hebbian dynamics. Edges (<code>CO_MODIFIED_WITH</code>, <code>FIXED_BY</code>) strengthen on success and attenuate on failure automatically.</p>
+        
+        <div class="math-block">
+          W<sub>t+1</sub> = W<sub>t</sub> + <i>&alpha;</i> &times; (Success ? 1 : 0)<br>
+          <i>&alpha;</i> = 0.15 &nbsp;&nbsp;|&nbsp;&nbsp; <i>&beta;</i> = -0.20
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CLI Workbench -->
-  <section id="cli">
+  <!-- CONNECTORS -->
+  <section id="connectors" class="wrap">
     <div class="section-head">
-      <span class="section-tag">Developer Interface</span>
-      <h2 class="section-title">CLI Workbench</h2>
-      <p class="section-desc">
-        Simple, predictable commands. Built entirely with the Python standard library — no heavy framework overhead, no background daemons.
-      </p>
+      <span class="section-tag">Universal Connectors</span>
+      <h2 class="section-title">CLI Workbench & MCP Server</h2>
     </div>
     
     <div class="workbench-container">
-      <div class="workbench-tabs" role="tablist">
-        <button class="tab-btn active" data-tab="evolve">sevolve evolve</button>
-        <button class="tab-btn" data-tab="ingest">sevolve ingest</button>
-        <button class="tab-btn" data-tab="artifact">sevolve artifact-add</button>
-        <button class="tab-btn" data-tab="promote">sevolve promote</button>
-        <button class="tab-btn" data-tab="doctor">sevolve doctor</button>
+      <div class="workbench-tabs">
+        <button class="tab-btn active" onclick="setCli('config')">claude_desktop_config.json</button>
+        <button class="tab-btn" onclick="setCli('scan')">sevolve brain scan</button>
+        <button class="tab-btn" onclick="setCli('query')">sevolve brain query</button>
+        <button class="tab-btn" onclick="setCli('sync')">sevolve brain sync</button>
       </div>
-      
-      <div class="workbench-body">
-        <div class="cli-code-block" id="cliCodeBlock">
-          <button class="copy-btn" id="copyBtn" onclick="copyCurrentCode()">Copy Command</button>
-          <pre id="cliCodeText"></pre>
-        </div>
+      <div class="workbench-body" id="cli-body">
+{
+  "mcpServers": {
+    "sevolve": {
+      "command": "python",
+      "args": ["-m", "sevolve.mcp", "--stdio"]
+    }
+  }
+}
       </div>
     </div>
   </section>
 
-  <!-- Safety Matrix -->
-  <section id="safety">
+  <!-- OBSIDIAN -->
+  <section id="obsidian" class="wrap">
     <div class="section-head">
-      <span class="section-tag">Safety Matrix</span>
-      <h2 class="section-title">Built with Strict Mechanical Guarantees</h2>
-      <p class="section-desc">
-        Self-evolving loops without constraints lead to reward hacking and capability collapse. <code>sevolve</code> enforces four hard architectural guarantees.
-      </p>
+      <span class="section-tag">Knowledge Base</span>
+      <h2 class="section-title">Obsidian Vault Showcase</h2>
     </div>
     
-    <div class="safety-grid">
-      <div class="safety-card">
-        <h3>Evaluator Isolation</h3>
-        <p>Graders run read-only in separate subprocesses. The judge never inspects the proposed mutation diff — only the final execution output.</p>
+    <div class="obsidian-showcase">
+      <div class="obs-sidebar">
+        <div style="color:var(--ink); margin-bottom:12px; font-weight:bold;">.sevolve/vault/</div>
+        <div class="obs-file">sym_class_Trace.md</div>
+        <div class="obs-file active">sym_func_Trace_add.md</div>
+        <div class="obs-file">sym_func_Agent_run.md</div>
       </div>
-      
-      <div class="safety-card strict">
-        <h3>Strict Held-Out Gain</h3>
-        <p>Mutations are only promoted if the held-out evaluation score strictly increases. Zero redundant version churn allowed.</p>
-      </div>
-      
-      <div class="safety-card">
-        <h3>Mechanical Gate Floor</h3>
-        <p>Passing <code>--ci</code> automates human approval but can NEVER bypass size limits, hermetic tests, or regression suites.</p>
-      </div>
-      
-      <div class="safety-card strict">
-        <h3>Git As Ground Truth</h3>
-        <p>Every evolved prompt and skill is committed as a clean git artifact with full commit history. Instant rollback via <code>git revert</code>.</p>
+      <div class="obs-content">
+<div class="obs-yaml">
+---<br>
+type: <span>function</span><br>
+file: <span>src/engine/trace.py</span><br>
+pagerank: <span>0.0452</span><br>
+---
+</div>
+# Trace.add()
+
+Adds a new execution event to the current agent trace.
+
+### Relationships
+- Calls: <span class="obs-wikilink">[[sym_func_Event_init]]</span>
+- Co-modified with: <span class="obs-wikilink">[[sym_class_TraceBuffer]]</span> (Weight: 0.45)
+- Frequently fails on: <span class="obs-wikilink">[[sym_func_JSON_serialize]]</span> (Weight: 0.20)
       </div>
     </div>
   </section>
 
-  <!-- CTA Banner -->
-  <div class="cta-banner">
-    <h2>Start Evolving Your Agent Harness</h2>
-    <p>Install the stdlib harness, add your first skill or prompt, and run your first autonomous evolution loop in under 2 minutes.</p>
-    <div class="hero-actions">
-      <a href="https://github.com/AkashPriyadarshii/sevolve" target="_blank" rel="noopener" class="btn-primary">
-        <span>Clone on GitHub</span>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-      </a>
-      <a href="#cli" class="btn-secondary">
-        <span>Read CLI Docs</span>
-      </a>
-    </div>
-  </div>
 </main>
 
-<footer class="site-footer">
-  <div class="wrap">
-    <div class="footer-content">
-      <div class="footer-left">
-        <div style="font-weight: 700; color: var(--ink);">sevolve &middot; Self-Evolving Agent Harness</div>
-        <div>Harness evolution only &middot; No weight training &middot; No GPU required &middot; MIT License</div>
-      </div>
-      <div class="footer-links">
-        <a href="https://github.com/AkashPriyadarshii/sevolve" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://github.com/AkashPriyadarshii/sevolve/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
-        <a href="https://akashpriyadarshi.vercel.app" target="_blank" rel="noopener">Akash Priyadarshi</a>
-      </div>
-    </div>
+<footer class="wrap">
+  <div>Built by <a href="https://akashpriyadarshi.vercel.app" target="_blank">Akash Priyadarshi</a></div>
+  <div>
+    <a href="https://x.com/Akash__ydv001" target="_blank">Twitter</a> &middot; 
+    <a href="https://github.com/AkashPriyadarshii/sevolve" target="_blank">GitHub</a> &middot; 
+    MIT License
   </div>
 </footer>
 
 <script>
-// Data for the Interactive Live Simulator
-const stepsData = [
-  {
-    phase: "01_SAMPLE_TASK",
-    status: "DISPATCHED",
-    content: `<span class="comment">// Querying seed evals for difficult test cases</span>
-<span class="keyword">const</span> task = {
-  <span class="string">"id"</span>: <span class="string">"eval_task_042"</span>,
-  <span class="string">"domain"</span>: <span class="string">"refactor_async_locks"</span>,
-  <span class="string">"description"</span>: <span class="string">"Refactor mutex acquire to prevent deadlocks under high load"</span>,
-  <span class="string">"held_out"</span>: <span class="number">true</span>,
-  <span class="string">"timeout_sec"</span>: <span class="number">45</span>
-};
-<span class="cyan">&rarr; Task dispatched to active agent executor using artifacts/skills/mutex-v1.md</span>`
-  },
-  {
-    phase: "02_TRACE_CAPTURE",
-    status: "RECORDED (2.4KB)",
-    content: `<span class="comment">// Captured agent execution trace in traces/session_042.jsonl</span>
-{
-  <span class="string">"step"</span>: <span class="number">1</span>, <span class="string">"tool"</span>: <span class="string">"view_file"</span>, <span class="string">"path"</span>: <span class="string">"engine/lock.py"</span>, <span class="string">"status"</span>: <span class="string">"OK"</span>
-}
-{
-  <span class="string">"step"</span>: <span class="number">2</span>, <span class="string">"tool"</span>: <span class="string">"run_command"</span>, <span class="string">"cmd"</span>: <span class="string">"pytest tests/test_lock.py"</span>,
-  <span class="string">"exit_code"</span>: <span class="number">1</span>,
-  <span class="string">"stderr"</span>: <span class="warn">"Deadlock detected: thread 2 blocked on lock_b while holding lock_a"</span>
-}
-<span class="cyan">&rarr; Execution trace complete. 2 tool calls captured. Total latency: 3.1s</span>`
-  },
-  {
-    phase: "03_BLIND_JUDGE",
-    status: "GRADED (SEPARATE PROC)",
-    content: `<span class="comment">// Blind evaluator scores trajectory without seeing any candidate diffs</span>
-<span class="keyword">class</span> <span class="string">BlindJudgeEvaluation</span>:
-  mechanical_test_pass: <span class="warn">False</span>
-  correctness_score:    <span class="number">0.40</span>
-  hallucination_rate:   <span class="number">0.00</span>
-  verdict:              <span class="warn">"FAILED_EDGE_CASE"</span>
-  diagnostic:           <span class="string">"Agent failed to enforce hierarchical lock ordering."</span>
-
-<span class="cyan">&rarr; Verdict passed to optimizer. Zero reward hacking possible.</span>`
-  },
-  {
-    phase: "04_TRACE_OPTIMIZER",
-    status: "3 MUTATIONS PROPOSED",
-    content: `<span class="comment">// Optimizer reflects on failure trace and mutates skill instructions</span>
-<span class="keyword">diff</span> --git a/artifacts/skills/mutex.md b/artifacts/skills/mutex.md
-<span class="warn">- Acquire any available lock immediately.</span>
-<span class="success">+ Always acquire locks in ascending order of mutex id (Hierarchical Locking).</span>
-<span class="success">+ Add 50ms exponential backoff with jitter on contention.</span>
-
-<span class="cyan">&rarr; Generated candidate variant B (hash: 8f9b2c). Ready for gating.</span>`
-  },
-  {
-    phase: "05_MECHANICAL_GATES",
-    status: "ALL GATES PASSED",
-    content: `<span class="comment">// Verifying candidate against mechanical test floor</span>
-[GATE 1] File size delta:       <span class="success">+142 bytes (Limit: 4000b) &rarr; PASS</span>
-[GATE 2] Regression test suite: <span class="success">18/18 passed &rarr; PASS</span>
-[GATE 3] Hermetic test floor:   <span class="success">Zero network calls &rarr; PASS</span>
-[GATE 4] Held-out eval score:   <span class="success">0.96 (Previous: 0.40, Delta: +56%) &rarr; PASS</span>
-
-<span class="success">&check; ALL 4 GATES VERIFIED. Candidate cleared for promotion.</span>`
-  },
-  {
-    phase: "06_HELD_OUT_PROMOTE",
-    status: "PROMOTED (PR #14)",
-    content: `<span class="comment">// Promotion committed directly to repository</span>
-<span class="keyword">commit</span> 7e3b1c9a4 (HEAD -> main)
-Author: sevolve-bot &lt;sevolve@users.noreply.github.com&gt;
-Date:   Mon Aug 31 21:30:00 2026 +0530
-
-    <span class="success">feat(artifacts): promote mutex-v2 (held-out eval 0.96)</span>
-    
-    - Closes failure in trace #042
-    - Generated report: artifacts/reports/report-mutex-v2.md
-
-<span class="cyan">&rarr; Evolution iteration complete. Next cycle queued.</span>`
-  }
-];
-
-let currentStep = 0;
-let autoCycleTimer = null;
-
-function renderStep(index) {
-  const step = stepsData[index];
-  document.getElementById("stepPhaseTitle").textContent = step.phase;
-  document.getElementById("stepTimestamp").textContent = "STATUS: " + step.status;
-  document.getElementById("stepOutput").innerHTML = step.content;
-  
-  const buttons = document.querySelectorAll(".step-btn");
-  buttons.forEach((btn, idx) => {
-    if (idx === index) {
-      btn.classList.add("active");
-      btn.setAttribute("aria-selected", "true");
-    } else {
-      btn.classList.remove("active");
-      btn.setAttribute("aria-selected", "false");
-    }
-  });
-}
-
-// Attach click listeners to simulator buttons
-document.querySelectorAll(".step-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const stepIdx = parseInt(btn.getAttribute("data-step"), 10);
-    currentStep = stepIdx;
-    renderStep(currentStep);
-    resetAutoCycle();
-  });
-});
-
-function autoCycle() {
-  currentStep = (currentStep + 1) % stepsData.length;
-  renderStep(currentStep);
-}
-
-function resetAutoCycle() {
-  if (autoCycleTimer) clearInterval(autoCycleTimer);
-  autoCycleTimer = setInterval(autoCycle, 5000);
-}
-
-// Initial render & timer start
-renderStep(0);
-resetAutoCycle();
-
-// CLI Workbench Tab Switcher
-const cliTabs = {
-  evolve: `# Run iterative evolution loops on a target skill
-sevolve evolve skill --name concise-summary --iterations 5 --ci
-
-# Evolve with custom threshold and byte size caps
-sevolve evolve skill --name concise-summary --threshold 0.90 --max-size 8000`,
-
-  ingest: `# Ingest real Claude Code session transcript into traces
-sevolve ingest --file ~/.claude/projects/my-app/session.jsonl
-
-# Ingest generic JSONL execution log
-sevolve ingest --file logs/agent_trace.jsonl --traces-dir traces/`,
-
-  artifact: `# Register a new skill or system prompt as an evolvable artifact
-sevolve artifact-add skill --name concise-summary --file my-skill.md
-
-# List all versioned artifacts and scores
-sevolve artifacts`,
-
-  promote: `# Automatically cut a git branch and open a GitHub PR via gh
-sevolve promote --artifact skill/concise-summary --report report/report-latest.md --base master`,
-
-  doctor: `# Verify system environment, tool availability on PATH, and trace health
-sevolve doctor`
+const simData = {
+  1: "> _sevolve brain scan --path src/\n[INFO] Parsing AST...\n[SUCCESS] Ingested 142 functions, 38 classes\n[SUCCESS] Created 319 structural CALLS edges\n[SUCCESS] Saved to .sevolve/brain.db",
+  2: "> _Agent encountered Traceback (ValueError)\n[INFO] Capturing execution trace...\n[INFO] Mapping error frames to symbols...\n[SUCCESS] Attributed failure to sym_func_parse_json",
+  3: "> _sevolve brain evolve\n[INFO] Applying Hebbian updates...\n[MATH] W(sym_func_A, sym_func_B) += 0.15 (Success)\n[MATH] W(sym_func_parse_json, sym_func_api) -= 0.20 (Failure)\n[SUCCESS] Cognitive graph updated",
+  4: "> _sevolve brain pagerank\n[INFO] Running Token-Budgeted PageRank...\n[SUCCESS] Ranked 180 symbols\n[INFO] Top node: sym_class_AgentGraph (PR: 0.089)",
+  5: "> _sevolve brain sync\n[INFO] Generating Obsidian Vault...\n[SUCCESS] Wrote 180 Markdown files to .sevolve/vault/\n[SUCCESS] Generated [[WikiLinks]] for all graph edges",
+  6: "> _MCP Client requested: get_context_map(target='sym_func_Trace_add')\n[INFO] Querying SQLite FTS5 + PageRank...\n[SUCCESS] Returned compact subgraph (240 tokens)"
 };
 
-let currentTab = "evolve";
-
-function renderTab(tabKey) {
-  currentTab = tabKey;
-  const code = cliTabs[tabKey];
-  document.getElementById("cliCodeText").textContent = code;
-  
-  document.querySelectorAll(".tab-btn").forEach(btn => {
-    if (btn.getAttribute("data-tab") === tabKey) {
-      btn.classList.add("active");
-    } else {
-      btn.classList.remove("active");
-    }
+function setSim(step) {
+  document.querySelectorAll('.step-btn').forEach((b, i) => {
+    b.classList.toggle('active', i+1 === step);
   });
+  document.getElementById('sim-body').textContent = simData[step];
 }
 
-document.querySelectorAll(".tab-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const tabKey = btn.getAttribute("data-tab");
-    renderTab(tabKey);
-  });
-});
+const cliData = {
+  'config': '{\n  "mcpServers": {\n    "sevolve": {\n      "command": "python",\n      "args": ["-m", "sevolve.mcp", "--stdio"]\n    }\n  }\n}',
+  'scan': '> sevolve brain scan --dir src/\nScanning AST... Done in 4ms.\nCreated 450 nodes and 980 edges.',
+  'query': '> sevolve brain query "how does traceback mapping work?"\n[FTS5 Match] sym_func_map_traceback\nDependencies: sym_class_Frame, sym_class_ErrorCapture',
+  'sync': '> sevolve brain sync\nSyncing graph to Obsidian vault...\nWrote 450 .md files to .sevolve/vault/'
+};
 
-renderTab("evolve");
-
-function copyCurrentCode() {
-  const code = cliTabs[currentTab];
-  navigator.clipboard.writeText(code).then(() => {
-    const copyBtn = document.getElementById("copyBtn");
-    copyBtn.textContent = "Copied!";
-    copyBtn.style.color = "var(--accent)";
-    copyBtn.style.borderColor = "var(--accent)";
-    setTimeout(() => {
-      copyBtn.textContent = "Copy Command";
-      copyBtn.style.color = "";
-      copyBtn.style.borderColor = "";
-    }, 2000);
+function setCli(tab) {
+  const tabs = ['config', 'scan', 'query', 'sync'];
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', tabs[i] === tab);
   });
+  document.getElementById('cli-body').textContent = cliData[tab];
 }
 </script>
 

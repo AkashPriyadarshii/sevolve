@@ -17,3 +17,11 @@
 - PR promotion: hardened `engine/promote.py` report parsing and wired `sevolve promote` subcommand.
 - CLI subcommands: added `sevolve ingest`, `sevolve promote`, and `sevolve doctor`.
 - Test suite expanded: 18 -> 32 hermetic tests (100% passing, 0.39s runtime).
+
+## 0.2.0 (2026-08-31) - Self-Evolving Code Graph & Cognitive Brain
+- Dual-Layer Architecture: Introduced Structural Code Graph (AST, calls, imports) + Cognitive Brain (traces, failures, fixes, rules).
+- SQLite WAL + FTS5 Backend: Sub-5ms queries and recursive SQL CTE multi-hop graph walks in `.sevolve/brain.db`.
+- Hebbian Evolution: Edge weight reinforcement on success ($\alpha=0.15$), attenuation on failure ($\beta=0.20$), dynamic half-life decay, and pruning.
+- Universal Agent MCP Server: Stdio JSON-RPC 2.0 interface (`search_brain`, `get_context_map`, `record_trace`, `suggest_fixes`) for Claude Code, Cursor, OpenClaw, Codex, Windsurf, and Antigravity.
+- Obsidian Vault Sync: Bi-directional markdown sync with YAML frontmatter and `[[WikiLinks]]` in `.sevolve/vault/`.
+- CLI Workbench: Added `sevolve brain scan`, `query`, `map`, `sync`, `prune`.

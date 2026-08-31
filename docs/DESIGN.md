@@ -1,42 +1,49 @@
 # DESIGN — sevolve
 
-## Architecture
+## System Architecture
 
 ```
-CLI ──> loop.evolve_artifact ──> executor (claude -p adapter)
-        │  ├── trace capture (JSONL)
-        │  ├── grader (blind, separate)
-        │  └── judge (LLM-as-judge, blind)
-        └── optimizer (GEPA-lite reflect-propose)
-        └── gate (size / regression / human / --ci)
-        └── promote (held-out score up → version bump)
+Agent Query (MCP / CLI) ──> engine/brain/mcp.py
+                                   │
+  ┌────────────────────────────────┴────────────────────────────────┐
+  ▼                                                                 ▼
+Layer 1: Structural Code Graph                     Layer 2: Cognitive Brain
+(engine/brain/parser.py)                          (engine/brain/hebbian.py)
+- AST symbol extraction (Python ast)              - Trace ingestion & failure linking
+- CALLS / IMPORTS / INHERITS DAG                  - Hebbian edge weight reinforcement
+- Token-budgeted PageRank (graph.py)              - Dynamic half-life decay & pruning
+  │                                                                 │
+  └────────────────────────────────┬────────────────────────────────┘
+                                   ▼
+              Storage Engine (engine/brain/db.py)
+              - SQLite WAL mode + FTS5 trigram search
+              - Recursive SQL CTE multi-hop graph walks (<1ms)
+              - Bi-directional Markdown / Obsidian export (vault.py)
 ```
 
-## Key decisions
-1. **Standalone orchestrator** shells `claude -p`. Hooks/ = optional trace source. Executor is the only CLI coupling; tests mock it.
-2. **Git is the store.** Artifact content = real files; meta.jsonl alongside. Rollback + review for free.
-3. **Blind grader.** Evaluator sits outside the loop. Reward-hacking defense.
-4. **Promote only on real gain.** Held-out score must rise.
-5. **Train/validate split.** Held-out task used for promotion; train task for feedback. Prevents overfit (GEPA lesson).
-6. **Capability guardrail** — weak judge logs a warning, never silent churn.
+## Key Decisions
 
-## Modules (engine/, stdlib-only)
-| module | job |
-|--------|-----|
-| artifact.py | versioned store, status, idempotent scoring |
-| trace.py | capture/save/render |
-| executor.py | CLI adapter |
-| grader.py | hard deterministic checks |
-| judge.py | blind LLM-as-judge, JSON parse |
-| optimizer.py | GEPA-lite reflect-propose |
-| gate.py | size/regression/human gates |
-| loop.py | orchestration |
-| report.py | before/after markdown |
+1. **Pure Standard Library Runtime**: Uses Python's built-in `sqlite3`, `ast`, `json`, `re`, and `argparse`. Zero external packages needed.
+2. **SQLite WAL + FTS5 as Graph & Search Backend**: Graph edges stored in adjacency tables with index scans and recursive SQL CTEs, giving sub-millisecond graph traversals without running a separate graph database daemon.
+3. **Dual-Layer Separation**: Structural AST code facts remain strictly deterministic; behavioral associations (co-modified files, failure causes, rule applicability) evolve continuously from real agent traces.
+4. **Hebbian Reinforcement with Compaction**: Edges strengthen on task success, attenuate on failure, decay over time, and prune dead links to keep storage under <5MB.
+5. **Universal JSON-RPC Stdio MCP Server**: Allows Claude Code, Cursor, OpenClaw, Codex, Windsurf, and Antigravity to connect without code changes.
+6. **Bi-directional Obsidian Vault**: All nodes export to clean Markdown files with `[[WikiLinks]]` for human visualization in Obsidian.
 
-## Upgrade paths (ponytail markers)
-- Optimizer: reflect-propose → genetic ops (crossover/tournament) + Pareto selection when overfit appears.
-- Executor: `claude -p` → configurable command.
-- Gates: add candidate's own test-suite gate when artifacts grow tests.
+## Module Layout (`engine/brain/`)
 
-## Safety
-Evaluator + permission control sit OUTSIDE the loop. `--ci` skips human, never mechanical gates.
+| Module | Purpose |
+|---|---|
+| `engine/brain/db.py` | SQLite connection manager, WAL mode, schema migrations, FTS5 table setup. |
+| `engine/brain/parser.py` | Fast AST symbol and reference parser (classes, functions, calls, imports). |
+| `engine/brain/graph.py` | Node/Edge CRUD, recursive CTE graph walks, Personalized PageRank. |
+| `engine/brain/hebbian.py` | Hebbian edge reinforcement, attenuation, half-life decay, and pruning. |
+| `engine/brain/mcp.py` | Stdio JSON-RPC 2.0 MCP server for coding agents. |
+| `engine/brain/vault.py` | Bidirectional export/import between SQLite and Obsidian `.sevolve/vault/*.md`. |
+| `engine/brain/cli.py` | Subcommands for `sevolve brain scan`, `query`, `map`, `sync`, `prune`. |
+
+## Safety & Performance Invariants
+- Query latency under 5ms.
+- Memory footprint under 5MB RAM.
+- 100% hermetic offline testing.
+- Non-destructive passive code parsing.
