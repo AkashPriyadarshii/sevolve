@@ -10,11 +10,23 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from .db import BrainDB
 
 
+STOPWORDS = {
+    "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "has", "he",
+    "in", "is", "it", "its", "of", "on", "that", "the", "to", "was", "were", "will",
+    "with", "my", "your", "ur", "me", "you", "i", "we", "they", "them", "what",
+    "who", "where", "when", "why", "how", "tell", "show", "get", "give", "can",
+    "could", "do", "does", "did", "this", "these", "those", "brain"
+}
+
+
 def _sanitize_fts5_query(query: str) -> str:
-    terms = re.findall(r'[a-zA-Z0-9_\-]+', query)
+    raw_terms = re.findall(r'[a-zA-Z0-9_\-]+', query.lower())
+    terms = [t for t in raw_terms if t not in STOPWORDS]
+    if not terms:
+        terms = raw_terms[:3]
     if not terms:
         return '""'
-    return " OR ".join(f'"{t}"' for t in terms[:10])
+    return " AND ".join(f'"{t}"' for t in terms[:5])
 
 
 class BrainGraph:
@@ -127,7 +139,14 @@ class BrainGraph:
             FROM node_fts fts
             JOIN nodes n ON fts.id = n.id
             WHERE node_fts MATCH ? {type_filter}
-            ORDER BY fts.rank
+            ORDER BY 
+                CASE 
+                    WHEN n.node_type = 'identity' THEN 0 
+                    WHEN n.node_type = 'rule' THEN 1 
+                    WHEN n.node_type = 'symbol' THEN 2 
+                    ELSE 3 
+                END, 
+                fts.rank ASC
             LIMIT ?
         """
         try:
